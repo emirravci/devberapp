@@ -1,6 +1,8 @@
-import { supabase, showLoader, hideLoader, showToast, showView, getSavedAppointmentIds, saveAppointmentId } from './supabase.js';
+import { supabase, showLoader, hideLoader, showToast, getSavedAppointmentIds, saveAppointmentId } from './supabase-core.js';
 
-// DOM Elements
+// =============================================
+// DOM ELEMENTS
+// =============================================
 const bookingForm = document.getElementById('booking-form');
 const servicesGrid = document.getElementById('services-grid');
 const bookingDateInput = document.getElementById('booking-date');
@@ -17,51 +19,57 @@ const appointmentsModal = document.getElementById('appointments-modal');
 const btnCloseAppointmentsModal = document.getElementById('btn-close-appointments-modal');
 const myAppointmentsList = document.getElementById('my-appointments-list');
 
-// Success view detail elements
+// Success view elements
+const successView = document.getElementById('success-view');
+const bookingView = document.getElementById('booking-view');
 const successService = document.getElementById('success-service');
 const successDate = document.getElementById('success-date');
 const successTime = document.getElementById('success-time');
 const successName = document.getElementById('success-name');
+const btnSuccessBack = document.getElementById('btn-success-back');
 
 // Module state variables
 let selectedService = '';
 let selectedPrice = 0;
-let selectedDuration = 30; // default 30 dk
+let selectedDuration = 30;
 let selectedDate = '';
 let selectedTime = '';
 
-// On Booking View load
-document.addEventListener('view-booking-loaded', () => {
-    resetBookingState();
-});
+// =============================================
+// VIEW SWITCHING (Booking ↔ Success)
+// =============================================
+function showCustomerView(viewId) {
+    [bookingView, successView].forEach(v => v.classList.remove('active'));
+    const target = document.getElementById(`${viewId}-view`);
+    if (target) target.classList.add('active');
+}
 
-// Setup Form Elements and Listeners
+// =============================================
+// INITIALIZATION
+// =============================================
 function initBookingEvents() {
-    // 1. Min date configuration (Cannot select past dates)
-    const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local format
+    // Min date (cannot select past dates)
+    const today = new Date().toLocaleDateString('en-CA');
     bookingDateInput.min = today;
 
-    // 2. Service Selection Cards
+    // Service cards
     const cards = servicesGrid.querySelectorAll('.service-card');
     cards.forEach(card => {
         card.addEventListener('click', () => {
             cards.forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
-            
             selectedService = card.getAttribute('data-service');
             selectedPrice = parseFloat(card.getAttribute('data-price'));
             selectedDuration = parseInt(card.getAttribute('data-duration') || '30', 10);
-            
             validateForm();
         });
     });
 
-    // 3. Date Selection Change
+    // Date change
     bookingDateInput.addEventListener('change', async (e) => {
         selectedDate = e.target.value;
-        selectedTime = ''; // reset time slot on date change
+        selectedTime = '';
         validateForm();
-        
         if (selectedDate) {
             await loadAvailableTimeSlots(selectedDate);
         } else {
@@ -69,104 +77,89 @@ function initBookingEvents() {
         }
     });
 
-    // 4. Input events for validation
+    // Input validation
     customerNameInput.addEventListener('input', validateForm);
 
-    // Telefon Numarası Formatlama Maskesi (0 (555) 123 45 67)
+    // Phone formatting mask
     customerPhoneInput.addEventListener('input', (e) => {
         let val = e.target.value;
         let digits = val.replace(/\D/g, '');
-        
-        // Maksimum 11 hane (Örn: 05551234567)
-        if (digits.length > 11) {
-            digits = digits.substring(0, 11);
-        }
-        
+        if (digits.length > 11) digits = digits.substring(0, 11);
+
         let formatted = '';
         if (digits.length > 0) {
             if (digits[0] === '0') {
                 formatted += '0';
-                if (digits.length > 1) {
-                    formatted += ' (' + digits.substring(1, 4);
-                }
-                if (digits.length > 4) {
-                    formatted += ') ' + digits.substring(4, 7);
-                }
-                if (digits.length > 7) {
-                    formatted += ' ' + digits.substring(7, 9);
-                }
-                if (digits.length > 9) {
-                    formatted += ' ' + digits.substring(9, 11);
-                }
+                if (digits.length > 1) formatted += ' (' + digits.substring(1, 4);
+                if (digits.length > 4) formatted += ') ' + digits.substring(4, 7);
+                if (digits.length > 7) formatted += ' ' + digits.substring(7, 9);
+                if (digits.length > 9) formatted += ' ' + digits.substring(9, 11);
             } else {
                 formatted += '(' + digits.substring(0, 3);
-                if (digits.length > 3) {
-                    formatted += ') ' + digits.substring(3, 6);
-                }
-                if (digits.length > 6) {
-                    formatted += ' ' + digits.substring(6, 8);
-                }
-                if (digits.length > 8) {
-                    formatted += ' ' + digits.substring(8, 10);
-                }
+                if (digits.length > 3) formatted += ') ' + digits.substring(3, 6);
+                if (digits.length > 6) formatted += ' ' + digits.substring(6, 8);
+                if (digits.length > 8) formatted += ' ' + digits.substring(8, 10);
             }
         }
         e.target.value = formatted;
         validateForm();
     });
 
-    // 5. Booking Form Submission
+    // Form submit
     bookingForm.addEventListener('submit', handleBookingSubmit);
 
-    // 6. Randevularım modalını aç
+    // My appointments modal
     btnMyAppointments.addEventListener('click', openAppointmentsModal);
-    
-    // 7. Modalı kapat
-    btnCloseAppointmentsModal.addEventListener('click', () => {
-        appointmentsModal.classList.remove('active');
-    });
-    
+    btnCloseAppointmentsModal.addEventListener('click', () => appointmentsModal.classList.remove('active'));
     appointmentsModal.addEventListener('click', (e) => {
-        if (e.target === appointmentsModal) {
-            appointmentsModal.classList.remove('active');
-        }
+        if (e.target === appointmentsModal) appointmentsModal.classList.remove('active');
+    });
+
+    // Success back button
+    btnSuccessBack.addEventListener('click', () => {
+        resetBookingState();
+        showCustomerView('booking');
     });
 }
 
 initBookingEvents();
 
-// Reset booking form and variables
+// =============================================
+// FORM STATE
+// =============================================
 function resetBookingState() {
     bookingForm.reset();
-    
-    // Clear service cards
-    const cards = servicesGrid.querySelectorAll('.service-card');
-    cards.forEach(c => c.classList.remove('selected'));
-    
-    // Hide slots
+    servicesGrid.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
     bookingSlotsContainer.style.display = 'none';
     bookingSlotsGrid.innerHTML = '';
-    
     selectedService = '';
     selectedPrice = 0;
     selectedDate = '';
     selectedTime = '';
-    
     btnBook.disabled = true;
 }
 
-// Fetch active slots from settings and filter booked ones
+function validateForm() {
+    const customerName = customerNameInput.value.trim();
+    const customerPhoneDigits = customerPhoneInput.value.replace(/\D/g, '');
+    const isPhoneValid = customerPhoneDigits.length === 10 || customerPhoneDigits.length === 11;
+    const isValid = selectedService && selectedDate && selectedTime && customerName && isPhoneValid;
+    btnBook.disabled = !isValid;
+}
+
+// =============================================
+// TIME SLOTS
+// =============================================
 async function loadAvailableTimeSlots(dateString) {
     showLoader();
     try {
-        // 1. Fetch settings (working hours and holiday)
         const { data: settingsData, error: settingsError } = await supabase
             .from('settings')
             .select('key, value')
             .in('key', ['working_slots', 'weekly_holiday']);
 
         if (settingsError) throw settingsError;
-        
+
         const workingSlotsSetting = settingsData.find(s => s.key === 'working_slots');
         const holidaySetting = settingsData.find(s => s.key === 'weekly_holiday');
 
@@ -175,17 +168,17 @@ async function loadAvailableTimeSlots(dateString) {
         ];
         const holidayDay = holidaySetting ? holidaySetting.value : 'none';
 
-        // Check if selected date is weekly holiday
+        // Check holiday
         if (holidayDay !== 'none') {
             const selectedDateObj = new Date(dateString);
-            const selectedDay = selectedDateObj.getDay(); // 0 (Sun) - 6 (Sat)
+            const selectedDay = selectedDateObj.getDay();
             if (selectedDay.toString() === holidayDay) {
                 renderHolidayMessage(holidayDay);
                 return;
             }
         }
 
-        // 2. Fetch existing appointments for selected date (excluding rejected ones)
+        // Fetch booked times
         const { data: bookedData, error: bookedError } = await supabase
             .from('appointments')
             .select('appointment_time')
@@ -193,12 +186,9 @@ async function loadAvailableTimeSlots(dateString) {
             .neq('status', 'rejected');
 
         if (bookedError) throw bookedError;
-        
         const bookedTimes = (bookedData || []).map(app => app.appointment_time);
 
-        // 3. Render time slot buttons
         renderTimeSlots(activeSlots, bookedTimes, dateString);
-
     } catch (err) {
         console.error("Randevu saatleri yüklenemedi:", err);
         showToast("Randevu saatleri yüklenirken hata oluştu.", "error");
@@ -207,14 +197,11 @@ async function loadAvailableTimeSlots(dateString) {
     }
 }
 
-// Render slot buttons and handle past times for current day
 function renderTimeSlots(activeSlots, bookedTimes, dateString) {
     bookingSlotsGrid.innerHTML = '';
-    
     const now = new Date();
     const todayStr = now.toLocaleDateString('en-CA');
     const isTodaySelected = (dateString === todayStr);
-    
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
 
@@ -234,7 +221,6 @@ function renderTimeSlots(activeSlots, bookedTimes, dateString) {
         btn.className = 'slot-btn';
         btn.innerText = slot;
 
-        // Check if slot has already passed today
         let isPastTime = false;
         if (isTodaySelected) {
             const [slotHour, slotMin] = slot.split(':').map(Number);
@@ -243,20 +229,13 @@ function renderTimeSlots(activeSlots, bookedTimes, dateString) {
             }
         }
 
-        // Check if slot is already booked
         const isBooked = bookedTimes.includes(slot);
 
-        // Disable slot if it's booked or in the past
         if (isBooked || isPastTime) {
             btn.disabled = true;
-            if (isBooked) {
-                btn.title = "Dolu";
-            } else {
-                btn.title = "Geçmiş Saat";
-            }
+            btn.title = isBooked ? "Dolu" : "Geçmiş Saat";
         }
 
-        // Button click action
         btn.addEventListener('click', () => {
             bookingSlotsGrid.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -267,43 +246,42 @@ function renderTimeSlots(activeSlots, bookedTimes, dateString) {
         bookingSlotsGrid.appendChild(btn);
     });
 
-    // Animate display
     bookingSlotsContainer.style.display = 'block';
 }
 
-// Check form values and enable/disable submit button
-function validateForm() {
-    const customerName = customerNameInput.value.trim();
-    const customerPhoneDigits = customerPhoneInput.value.replace(/\D/g, '');
-    
-    // Valid phone must have 10 digits (without leading 0) or 11 digits (with leading 0)
-    const isPhoneValid = customerPhoneDigits.length === 10 || customerPhoneDigits.length === 11;
-    const isValid = selectedService && selectedDate && selectedTime && customerName && isPhoneValid;
-    btnBook.disabled = !isValid;
+function renderHolidayMessage(holidayDayNum) {
+    const daysTurkish = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+    const holidayName = daysTurkish[holidayDayNum] || "Tatil Günü";
+
+    bookingSlotsGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; color: var(--color-error); font-weight: 600; padding: 1.5rem 0; font-size: 0.95rem;">
+            <i class="fa-solid fa-mug-hot" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block; color: var(--accent-gold);"></i>
+            Salonumuz ${holidayName} günleri kapalıdır.
+        </div>
+    `;
+    bookingSlotsContainer.style.display = 'block';
 }
 
-// Format date for success screen (e.g. 27 Haziran 2026)
+// =============================================
+// FORMAT DATE
+// =============================================
 function formatTurkishDate(dateStr) {
     if (!dateStr) return '-';
-    // Use split to avoid local timezone offset shifting the date
     const [year, month, day] = dateStr.split('-');
     const date = new Date(year, month - 1, day);
-    return date.toLocaleDateString('tr-TR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    });
+    return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-// Submit booking form
+// =============================================
+// BOOKING SUBMIT
+// =============================================
 async function handleBookingSubmit(e) {
     e.preventDefault();
-    
     const customerName = customerNameInput.value.trim();
     const customerPhone = customerPhoneInput.value.trim();
     const notes = customerNotesInput.value.trim();
-    
     const customerPhoneDigits = customerPhone.replace(/\D/g, '');
+
     if (!selectedService || !selectedDate || !selectedTime || !customerName || (customerPhoneDigits.length !== 10 && customerPhoneDigits.length !== 11)) {
         showToast("Lütfen tüm zorunlu alanları doğru doldurun!", "error");
         return;
@@ -311,7 +289,6 @@ async function handleBookingSubmit(e) {
 
     showLoader();
     try {
-        // Insert appointment and select ID
         const { data: insertedData, error } = await supabase
             .from('appointments')
             .insert({
@@ -328,25 +305,17 @@ async function handleBookingSubmit(e) {
 
         if (error) throw error;
 
-        // Save appointment ID to localstorage
-        if (insertedData && insertedData.id) {
-            saveAppointmentId(insertedData.id);
-        }
+        if (insertedData && insertedData.id) saveAppointmentId(insertedData.id);
 
-        // Render success screen details
         successService.innerText = `${selectedService} (${selectedPrice} ₺)`;
         successDate.innerText = formatTurkishDate(selectedDate);
         successTime.innerText = selectedTime;
         successName.innerText = customerName;
 
-        // Setup calendar links
         setupCalendarLinks(selectedService, selectedDate, selectedTime, selectedDuration);
 
         showToast("Randevunuz başarıyla alındı!", "success");
-        
-        // Route to success screen
-        showView('success');
-
+        showCustomerView('success');
     } catch (err) {
         console.error("Randevu kaydetme hatası:", err);
         showToast("Randevu kaydedilirken bir hata oluştu.", "error");
@@ -355,123 +324,34 @@ async function handleBookingSubmit(e) {
     }
 }
 
-// Render holiday message
-function renderHolidayMessage(holidayDayNum) {
-    const daysTurkish = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
-    const holidayName = daysTurkish[holidayDayNum] || "Tatil Günü";
-    
-    bookingSlotsGrid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; color: var(--color-error); font-weight: 600; padding: 1.5rem 0; font-size: 0.95rem;">
-            <i class="fa-solid fa-mug-hot" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block; color: var(--accent-gold);"></i>
-            Salonumuz ${holidayName} günleri kapalıdır.
-        </div>
-    `;
-    bookingSlotsContainer.style.display = 'block';
-}
-
-// Open and load customer's saved appointments in modal
-async function openAppointmentsModal() {
-    appointmentsModal.classList.add('active');
-    myAppointmentsList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 1rem;"><i class="fa-solid fa-circle-notch fa-spin"></i> Yükleniyor...</div>';
-    
-    const savedIds = getSavedAppointmentIds();
-    if (savedIds.length === 0) {
-        myAppointmentsList.innerHTML = `
-            <div style="text-align: center; color: var(--text-secondary); padding: 2rem 1rem;">
-                <i class="fa-solid fa-calendar-xmark" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem; display: block;"></i>
-                Henüz kayıtlı bir randevunuz bulunmamaktadır.
-            </div>
-        `;
-        return;
-    }
-    
-    try {
-        const { data, error } = await supabase
-            .from('appointments')
-            .select('*')
-            .in('id', savedIds)
-            .order('appointment_date', { ascending: false })
-            .order('appointment_time', { ascending: false });
-            
-        if (error) throw error;
-        
-        if (!data || data.length === 0) {
-            myAppointmentsList.innerHTML = `
-                <div style="text-align: center; color: var(--text-secondary); padding: 2rem 1rem;">
-                    <i class="fa-solid fa-calendar-xmark" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem; display: block;"></i>
-                    Kayıtlı randevularınız bulunamadı veya silinmiş.
-                </div>
-            `;
-            return;
-        }
-        
-        myAppointmentsList.innerHTML = '';
-        data.forEach(app => {
-            const card = document.createElement('div');
-            card.className = 'my-appointment-card';
-            
-            let statusText = 'Bekliyor';
-            let statusClass = 'pending';
-            if (app.status === 'approved') {
-                statusText = 'Onaylandı';
-                statusClass = 'approved';
-            } else if (app.status === 'rejected') {
-                statusText = 'Reddedildi';
-                statusClass = 'rejected';
-            }
-            
-            card.innerHTML = `
-                <div class="my-appointment-info">
-                    <span class="my-appointment-service">${app.service_name}</span>
-                    <span class="my-appointment-datetime">
-                        <i class="fa-solid fa-calendar-day"></i> ${formatTurkishDate(app.appointment_date)} &nbsp;
-                        <i class="fa-solid fa-clock"></i> ${app.appointment_time}
-                    </span>
-                </div>
-                <div class="my-appointment-status">
-                    <span class="status-badge ${statusClass}">${statusText}</span>
-                </div>
-            `;
-            myAppointmentsList.appendChild(card);
-        });
-        
-    } catch (err) {
-        console.error("Randevular yüklenirken hata oluştu:", err);
-        myAppointmentsList.innerHTML = '<div style="color: var(--color-error); text-align: center; padding: 1rem;">Randevular yüklenirken bir hata oluştu.</div>';
-    }
-}
-
-// Setup Google Calendar and Apple/iCal buttons
+// =============================================
+// CALENDAR LINKS
+// =============================================
 function setupCalendarLinks(service, dateStr, timeStr, durationMinutes) {
     const googleBtn = document.getElementById('btn-add-google-calendar');
     const appleBtn = document.getElementById('btn-add-apple-calendar');
-    
-    // Parse time
+
     const [hours, minutes] = timeStr.split(':').map(Number);
     const [year, month, day] = dateStr.split('-').map(Number);
-    
-    // Create Date objects in local time
+
     const startDate = new Date(year, month - 1, day, hours, minutes);
     const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
-    
-    // Format YYYYMMDDTHHmmSS
+
     const formatISO = (date) => {
         const pad = (n) => String(n).padStart(2, '0');
         return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
     };
-    
+
     const startStr = formatISO(startDate);
     const endStr = formatISO(endDate);
-    
-    // 1. Google Calendar URL
+
     const title = encodeURIComponent(`Saloon Gold Randevu - ${service}`);
     const details = encodeURIComponent(`Saloon Gold adresindeki ${service} randevunuz. Süre: ${durationMinutes} dk. Lütfen randevu saatinden 5 dakika önce salonda olunuz.`);
     const location = encodeURIComponent("Saloon Gold, İstanbul");
-    
+
     const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
     googleBtn.href = googleUrl;
-    
-    // 2. iCal / Apple Calendar Download
+
     appleBtn.onclick = () => {
         const icsContent = [
             "BEGIN:VCALENDAR",
@@ -488,7 +368,7 @@ function setupCalendarLinks(service, dateStr, timeStr, durationMinutes) {
             "END:VEVENT",
             "END:VCALENDAR"
         ].join("\r\n");
-        
+
         const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
@@ -497,4 +377,72 @@ function setupCalendarLinks(service, dateStr, timeStr, durationMinutes) {
         link.click();
         document.body.removeChild(link);
     };
+}
+
+// =============================================
+// MY APPOINTMENTS MODAL
+// =============================================
+async function openAppointmentsModal() {
+    appointmentsModal.classList.add('active');
+    myAppointmentsList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 1rem;"><i class="fa-solid fa-circle-notch fa-spin"></i> Yükleniyor...</div>';
+
+    const savedIds = getSavedAppointmentIds();
+    if (savedIds.length === 0) {
+        myAppointmentsList.innerHTML = `
+            <div style="text-align: center; color: var(--text-secondary); padding: 2rem 1rem;">
+                <i class="fa-solid fa-calendar-xmark" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem; display: block;"></i>
+                Henüz kayıtlı bir randevunuz bulunmamaktadır.
+            </div>
+        `;
+        return;
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('appointments')
+            .select('*')
+            .in('id', savedIds)
+            .order('appointment_date', { ascending: false })
+            .order('appointment_time', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            myAppointmentsList.innerHTML = `
+                <div style="text-align: center; color: var(--text-secondary); padding: 2rem 1rem;">
+                    <i class="fa-solid fa-calendar-xmark" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem; display: block;"></i>
+                    Kayıtlı randevularınız bulunamadı veya silinmiş.
+                </div>
+            `;
+            return;
+        }
+
+        myAppointmentsList.innerHTML = '';
+        data.forEach(app => {
+            const card = document.createElement('div');
+            card.className = 'my-appointment-card';
+
+            let statusText = 'Bekliyor';
+            let statusClass = 'pending';
+            if (app.status === 'approved') { statusText = 'Onaylandı'; statusClass = 'approved'; }
+            else if (app.status === 'rejected') { statusText = 'Reddedildi'; statusClass = 'rejected'; }
+
+            card.innerHTML = `
+                <div class="my-appointment-info">
+                    <span class="my-appointment-service">${app.service_name}</span>
+                    <span class="my-appointment-datetime">
+                        <i class="fa-solid fa-calendar-day"></i> ${formatTurkishDate(app.appointment_date)} &nbsp;
+                        <i class="fa-solid fa-clock"></i> ${app.appointment_time}
+                    </span>
+                </div>
+                <div class="my-appointment-status">
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+            `;
+            myAppointmentsList.appendChild(card);
+        });
+    } catch (err) {
+        console.error("Randevular yüklenirken hata oluştu:", err);
+        myAppointmentsList.innerHTML = '<div style="color: var(--color-error); text-align: center; padding: 1rem;">Randevular yüklenirken bir hata oluştu.</div>';
+    }
 }

@@ -1,0 +1,660 @@
+/* =============================================
+   ADMIN PAGE SPECIFIC STYLES
+   admin.html'e özel stiller
+   ============================================= */
+
+/* Admin page body override */
+.admin-page {
+    background-color: hsl(220, 15%, 97%);
+}
+
+/* Admin View Section Switching */
+.admin-view {
+    display: none;
+    min-height: 100vh;
+}
+
+.admin-view.active {
+    display: block;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* =============================================
+   LOGIN PAGE
+   ============================================= */
+.admin-login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, hsl(30, 45%, 98%) 0%, hsl(35, 40%, 92%) 100%);
+}
+
+.admin-login-card {
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;
+}
+
+.admin-login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.admin-login-logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem auto;
+    box-shadow: 0 8px 24px hsla(35, 60%, 45%, 0.2);
+}
+
+.admin-login-logo i {
+    font-size: 1.75rem;
+    color: white;
+}
+
+.admin-login-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+}
+
+.admin-login-header p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Password toggle */
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-input-wrapper input {
+    padding-right: 3rem;
+}
+
+.btn-toggle-password {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.25rem;
+    transition: var(--transition);
+}
+
+.btn-toggle-password:hover {
+    color: var(--accent-gold);
+}
+
+/* Login footer */
+.admin-login-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-back-to-site {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.btn-back-to-site:hover {
+    color: var(--accent-gold);
+}
+
+/* =============================================
+   DASHBOARD LAYOUT
+   ============================================= */
+
+/* Admin Container */
+.admin-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Navbar refinements */
+.admin-navbar {
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.admin-brand i {
+    color: var(--accent-gold);
+}
+
+.admin-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.admin-username-display {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.btn-sm {
+    padding: 0.45rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* =============================================
+   STAT CARDS — Colored icons
+   ============================================= */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.stat-icon.pending-icon {
+    background-color: hsl(45, 85%, 92%);
+    color: hsl(45, 80%, 40%);
+}
+
+.stat-icon.approved-icon {
+    background-color: hsl(145, 70%, 92%);
+    color: var(--color-success);
+}
+
+.stat-icon.today-icon {
+    background-color: hsl(200, 70%, 92%);
+    color: var(--color-info);
+}
+
+.stat-icon.total-icon {
+    background-color: hsl(270, 50%, 93%);
+    color: hsl(270, 50%, 50%);
+}
+
+.stat-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* =============================================
+   TABS
+   ============================================= */
+.admin-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.admin-tab-btn {
+    background: none;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-tab-btn:hover {
+    background-color: var(--bg-input);
+    color: var(--text-primary);
+}
+
+.admin-tab-btn.active {
+    background-color: var(--accent-gold-glow);
+    color: var(--accent-gold);
+}
+
+/* =============================================
+   FILTER TABS
+   ============================================= */
+.filter-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: inherit;
+}
+
+.filter-btn:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--text-secondary);
+}
+
+.filter-btn.active {
+    background-color: var(--accent-gold-glow);
+    color: var(--accent-gold);
+    border-color: var(--accent-gold);
+}
+
+/* =============================================
+   APPOINTMENT CARDS
+   ============================================= */
+.appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.appointment-admin-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.appointment-admin-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent-gold);
+}
+
+.appointment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.app-customer-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.app-customer-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.app-details-row {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+}
+
+.app-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.app-notes {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    background-color: var(--bg-input);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border-left: 3px solid var(--accent-gold);
+    margin-top: 0.25rem;
+}
+
+.app-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* =============================================
+   SCHEDULER PANEL
+   ============================================= */
+.scheduler-panel {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.scheduler-desc {
+    margin-bottom: 2rem;
+}
+
+.scheduler-desc h2 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.scheduler-desc h2 i {
+    color: var(--accent-gold);
+}
+
+.scheduler-desc p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Holiday Config */
+.holiday-config-card {
+    background: var(--bg-input);
+    padding: 1.25rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.holiday-config-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.holiday-config-card h3 i {
+    color: var(--accent-gold);
+}
+
+.holiday-config-card > p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.holiday-config-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.holiday-config-row select {
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+}
+
+.holiday-config-row button {
+    width: auto !important;
+    padding: 0.6rem 1.25rem !important;
+    font-size: 0.85rem !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Slots Editor */
+.scheduler-slots-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.add-slot-form {
+    display: flex;
+    gap: 0.75rem;
+    max-width: 400px;
+}
+
+.add-slot-form input {
+    flex-grow: 1;
+}
+
+.add-slot-form button {
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.slots-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.slots-section-header h3 {
+    font-size: 1rem;
+}
+
+.slots-count-badge {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+    background-color: var(--accent-gold-glow);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+}
+
+.slots-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.75rem;
+}
+
+.slot-edit-badge {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    transition: var(--transition);
+}
+
+.slot-edit-badge:hover {
+    border-color: var(--color-error);
+}
+
+.slot-edit-badge button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-edit-badge button:hover {
+    color: var(--color-error);
+}
+
+/* =============================================
+   EMPTY STATE
+   ============================================= */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--text-secondary);
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+/* =============================================
+   RESPONSIVE — ADMIN
+   ============================================= */
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 1.25rem 1rem;
+    }
+
+    .admin-navbar {
+        padding: 0.75rem 1rem;
+    }
+
+    .admin-brand span {
+        font-size: 1rem;
+    }
+
+    .hide-mobile {
+        display: none;
+    }
+
+    .appointment-admin-card {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .app-actions {
+        width: 100%;
+    }
+
+    .app-actions button,
+    .app-actions a {
+        flex: 1;
+    }
+
+    .add-slot-form {
+        flex-direction: column;
+    }
+
+    .add-slot-form button {
+        width: 100%;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .admin-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .filter-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}

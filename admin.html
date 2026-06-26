@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saloon Gold | Yönetici Paneli</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-page">
+
+    <div id="global-loader"><div class="spinner"></div></div>
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- 1. GİRİŞ EKRANI -->
+    <section id="admin-login-view" class="admin-view active">
+        <div class="admin-login-wrapper">
+            <div class="admin-login-card">
+                <div class="admin-login-header">
+                    <div class="admin-login-logo"><i class="fa-solid fa-scissors"></i></div>
+                    <h1>Saloon Gold</h1>
+                    <p>Yönetici Paneline Giriş</p>
+                </div>
+                <form id="admin-login-form">
+                    <div class="form-group">
+                        <label for="admin-email">E-posta Adresi</label>
+                        <input type="email" id="admin-email" placeholder="admin@saloon.com" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-password">Şifre</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="admin-password" placeholder="••••••••" required autocomplete="current-password">
+                            <button type="button" id="btn-toggle-password" class="btn-toggle-password" title="Şifreyi Göster/Gizle">
+                                <i class="fa-solid fa-eye" id="password-eye-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" id="btn-admin-login" style="margin-top:1.5rem;">
+                        <i class="fa-solid fa-right-to-bracket"></i> Giriş Yap
+                    </button>
+                </form>
+                <div class="admin-login-footer">
+                    <a href="index.html" class="btn-back-to-site">
+                        <i class="fa-solid fa-arrow-left"></i> Müşteri Sayfasına Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. DASHBOARD -->
+    <section id="admin-dashboard-view" class="admin-view">
+        <nav class="admin-navbar">
+            <div class="admin-brand">
+                <i class="fa-solid fa-scissors"></i>
+                <span>Saloon Gold Panel</span>
+            </div>
+            <div class="admin-nav-actions">
+                <span class="admin-username-display" id="admin-username"></span>
+                <a href="index.html" class="btn-secondary btn-sm" title="Müşteri Sayfası">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    <span class="hide-mobile">Siteyi Gör</span>
+                </a>
+                <button class="btn-secondary btn-sm" id="btn-admin-logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span class="hide-mobile">Çıkış Yap</span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="admin-container">
+            <!-- İstatistikler -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon pending-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <div class="stat-details">
+                        <span class="stat-value" id="stat-pending">0</span>
+                        <span class="stat-label">Bekleyen</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon approved-icon"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="stat-details">
+                        <span class="stat-value" id="stat-approved">0</span>
+                        <span class="stat-label">Onaylanan</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon today-icon"><i class="fa-solid fa-calendar-day"></i></div>
+                    <div class="stat-details">
+                        <span class="stat-value" id="stat-today">0</span>
+                        <span class="stat-label">Bugünkü</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon total-icon"><i class="fa-solid fa-list-check"></i></div>
+                    <div class="stat-details">
+                        <span class="stat-value" id="stat-total">0</span>
+                        <span class="stat-label">Toplam</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sekmeler -->
+            <div class="admin-tabs">
+                <button class="admin-tab-btn active" id="tab-randevular">
+                    <i class="fa-solid fa-calendar-check"></i> Randevuları Yönet
+                </button>
+                <button class="admin-tab-btn" id="tab-calisma-saatleri">
+                    <i class="fa-solid fa-clock"></i> Çalışma Saatleri
+                </button>
+            </div>
+
+            <!-- Panel 1: Randevular -->
+            <div id="admin-appointments-panel">
+                <div class="filter-tabs">
+                    <button class="filter-btn active" id="filter-all">
+                        <i class="fa-solid fa-border-all"></i> Tümü
+                    </button>
+                    <button class="filter-btn" id="filter-pending">
+                        <i class="fa-solid fa-hourglass-half"></i> Bekleyenler
+                    </button>
+                    <button class="filter-btn" id="filter-approved">
+                        <i class="fa-solid fa-check"></i> Onaylananlar
+                    </button>
+                    <button class="filter-btn" id="filter-rejected">
+                        <i class="fa-solid fa-ban"></i> Reddedilenler
+                    </button>
+                </div>
+                <div class="appointments-list" id="admin-appointments-list"></div>
+            </div>
+
+            <!-- Panel 2: Çalışma Saatleri -->
+            <div id="admin-scheduler-panel" class="scheduler-panel" style="display:none;">
+                <div class="scheduler-desc">
+                    <h2><i class="fa-solid fa-clock"></i> Çalışma Saatlerini Düzenle</h2>
+                    <p>Müşterilerin randevu alırken göreceği aktif saat dilimlerini ve tatil gününüzü buradan yönetebilirsiniz.</p>
+                </div>
+                <div class="holiday-config-card">
+                    <h3><i class="fa-solid fa-umbrella-beach"></i> Haftalık Tatil Günü</h3>
+                    <p>Seçtiğiniz günde müşteriler randevu alamayacaktır.</p>
+                    <div class="holiday-config-row">
+                        <select id="select-holiday-day">
+                            <option value="none">Yok (Her Gün Açık)</option>
+                            <option value="0">Pazar</option>
+                            <option value="1">Pazartesi</option>
+                            <option value="2">Salı</option>
+                            <option value="3">Çarşamba</option>
+                            <option value="4">Perşembe</option>
+                            <option value="5">Cuma</option>
+                            <option value="6">Cumartesi</option>
+                        </select>
+                        <button class="btn-primary" id="btn-save-holiday">
+                            <i class="fa-solid fa-floppy-disk"></i> Kaydet
+                        </button>
+                    </div>
+                </div>
+                <div class="scheduler-slots-editor">
+                    <div class="add-slot-form">
+                        <input type="time" id="new-slot-time">
+                        <button class="btn-primary" id="btn-add-slot">
+                            <i class="fa-solid fa-plus"></i> Saat Ekle
+                        </button>
+                    </div>
+                    <div class="slots-section-header">
+                        <h3>Aktif Saat Dilimleri</h3>
+                        <span class="slots-count-badge" id="slots-count">0 saat</span>
+                    </div>
+                    <div class="slots-edit-grid" id="slots-edit-grid"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-core.js" type="module"></script>
+    <script src="js/admin.js" type="module"></script>
+</body>
+</html>
