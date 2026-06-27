@@ -255,6 +255,15 @@ function formatDateTurkish(dateString) {
     return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+function formatTime(timeStr) {
+    if (!timeStr) return '-';
+    const parts = timeStr.split(':');
+    if (parts.length >= 2) {
+        return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+    }
+    return timeStr;
+}
+
 // =============================================
 // WHATSAPP INTEGRATION
 // =============================================
@@ -268,14 +277,15 @@ function toWhatsAppNumber(phone) {
 function buildWhatsAppUrl(app, messageType) {
     const waNumber = toWhatsAppNumber(app.customer_phone);
     const dateStr = formatDateTurkish(app.appointment_date);
+    const timeStr = formatTime(app.appointment_time);
 
     let message = '';
     if (messageType === 'approved') {
-        message = `Merhaba ${app.customer_name} 👋\n\nRandevunuz onaylanmıştır! ✅\n\n✂️ Hizmet: ${app.service_name}\n📅 Tarih: ${dateStr}\n🕐 Saat: ${app.appointment_time}\n\nRandevu saatinizden 5 dakika önce salonumuzda olmanızı rica ederiz. Görüşmek üzere! 🙏`;
+        message = `Merhaba ${app.customer_name} 👋\n\nRandevunuz onaylanmıştır! ✅\n\n✂️ Hizmet: ${app.service_name}\n📅 Tarih: ${dateStr}\n🕐 Saat: ${timeStr}\n\nRandevu saatinizden 5 dakika önce salonumuzda olmanızı rica ederiz. Görüşmek üzere! 🙏`;
     } else if (messageType === 'rejected') {
-        message = `Merhaba ${app.customer_name} 👋\n\nMaalesef ${dateStr} tarihli saat ${app.appointment_time} için randevu talebinizi alamıyoruz. 😔\n\nFarklı bir saat veya tarih için yeniden randevu alabilirsiniz. İyi günler dileriz!`;
+        message = `Merhaba ${app.customer_name} 👋\n\nMaalesef ${dateStr} tarihli saat ${timeStr} için randevu talebinizi alamıyoruz. 😔\n\nFarklı bir saat veya tarih için yeniden randevu alabilirsiniz. İyi günler dileriz!`;
     } else {
-        message = `Merhaba ${app.customer_name} 👋\n\nRandevunuz hakkında bilgi vermek için ulaşıyoruz.\n\n✂️ Hizmet: ${app.service_name}\n📅 Tarih: ${dateStr}\n🕐 Saat: ${app.appointment_time}`;
+        message = `Merhaba ${app.customer_name} 👋\n\nRandevunuz hakkında bilgi vermek için ulaşıyoruz.\n\n✂️ Hizmet: ${app.service_name}\n📅 Tarih: ${dateStr}\n🕐 Saat: ${timeStr}`;
     }
 
     return `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
@@ -322,7 +332,7 @@ function renderFilteredAppointments() {
                 <div class="app-details-row">
                     <div class="app-detail-item"><i class="fa-solid fa-scissors"></i> <span>${app.service_name}</span></div>
                     <div class="app-detail-item"><i class="fa-solid fa-calendar-day"></i> <span>${formatDate(app.appointment_date)}</span></div>
-                    <div class="app-detail-item"><i class="fa-solid fa-clock"></i> <span>${app.appointment_time}</span></div>
+                    <div class="app-detail-item"><i class="fa-solid fa-clock"></i> <span>${formatTime(app.appointment_time)}</span></div>
                     <div class="app-detail-item"><i class="fa-solid fa-phone"></i> <span><a href="tel:${app.customer_phone}" style="color: inherit; text-decoration: none;">${app.customer_phone}</a></span></div>
                 </div>
                 ${notesHtml}

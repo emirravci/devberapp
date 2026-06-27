@@ -185,8 +185,16 @@ async function loadAvailableTimeSlots(dateString) {
             .eq('appointment_date', dateString)
             .neq('status', 'rejected');
 
-        if (bookedError) throw bookedError;
-        const bookedTimes = (bookedData || []).map(app => app.appointment_time);
+        const bookedTimes = (bookedData || []).map(app => {
+            const time = app.appointment_time;
+            if (time && time.includes(':')) {
+                const parts = time.split(':');
+                if (parts.length >= 2) {
+                    return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+                }
+            }
+            return time;
+        });
 
         renderTimeSlots(activeSlots, bookedTimes, dateString);
     } catch (err) {
@@ -263,13 +271,22 @@ function renderHolidayMessage(holidayDayNum) {
 }
 
 // =============================================
-// FORMAT DATE
+// FORMAT DATE & TIME
 // =============================================
 function formatTurkishDate(dateStr) {
     if (!dateStr) return '-';
     const [year, month, day] = dateStr.split('-');
     const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatTime(timeStr) {
+    if (!timeStr) return '-';
+    const parts = timeStr.split(':');
+    if (parts.length >= 2) {
+        return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+    }
+    return timeStr;
 }
 
 // =============================================
@@ -432,7 +449,7 @@ async function openAppointmentsModal() {
                     <span class="my-appointment-service">${app.service_name}</span>
                     <span class="my-appointment-datetime">
                         <i class="fa-solid fa-calendar-day"></i> ${formatTurkishDate(app.appointment_date)} &nbsp;
-                        <i class="fa-solid fa-clock"></i> ${app.appointment_time}
+                        <i class="fa-solid fa-clock"></i> ${formatTime(app.appointment_time)}
                     </span>
                 </div>
                 <div class="my-appointment-status">
