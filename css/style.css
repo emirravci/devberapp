@@ -103,64 +103,133 @@ h1, h2, h3, h4 {
     padding: 2.5rem 1.5rem;
 }
 
-/* Landing / Booking View Header */
-.salon-header {
+/* Premium Full-Width Hero Section */
+.salon-hero {
+    position: relative;
+    background: linear-gradient(135deg, hsl(30, 25%, 12%) 0%, hsl(35, 30%, 8%) 100%);
+    color: white;
+    padding: 5rem 1.5rem 6.5rem 1.5rem;
     text-align: center;
-    margin-bottom: 3.5rem;
+    overflow: hidden;
 }
-
+.hero-bg-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.05;
+    background-image: radial-gradient(var(--accent-gold) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+    pointer-events: none;
+}
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    margin: 0 auto;
+}
+.hero-logo-icon {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background-color: hsla(35, 60%, 45%, 0.15);
+    border: 2px solid var(--accent-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--accent-gold);
+    margin: 0 auto 1.5rem auto;
+    box-shadow: 0 0 20px var(--accent-gold-glow);
+    animation: pulseGold 3s infinite;
+}
+@keyframes pulseGold {
+    0% { box-shadow: 0 0 0 0 hsla(35, 60%, 45%, 0.4); }
+    70% { box-shadow: 0 0 0 12px hsla(35, 60%, 45%, 0); }
+    100% { box-shadow: 0 0 0 0 hsla(35, 60%, 45%, 0); }
+}
 .salon-badge {
     display: inline-block;
-    padding: 0.5rem 1.25rem;
+    padding: 0.4rem 1.1rem;
     background-color: var(--accent-gold-glow);
     color: var(--accent-gold);
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     letter-spacing: 2px;
     border-radius: 50px;
     margin-bottom: 1rem;
-    border: 1px solid hsla(35, 60%, 45%, 0.2);
+    border: 1px solid hsla(35, 60%, 45%, 0.25);
 }
-
 .salon-title {
-    font-size: 3rem;
+    font-size: 3.25rem;
     font-weight: 800;
-    margin-bottom: 0.75rem;
-    position: relative;
-    display: inline-block;
+    color: white;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+    font-family: 'Playfair Display', serif;
 }
-
-.salon-title::after {
-    content: "";
-    display: block;
-    width: 60px;
-    height: 3px;
-    background-color: var(--accent-gold);
-    margin: 0.5rem auto 0 auto;
-    border-radius: 2px;
-}
-
 .salon-tagline {
     font-size: 1.1rem;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     font-style: italic;
     font-family: 'Playfair Display', serif;
+    margin-bottom: 1.5rem;
+}
+.hero-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 0.55rem 1.25rem;
+    border-radius: var(--border-radius);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+.btn-ghost:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: white;
+}
+.hero-divider {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    z-index: 1;
+}
+.hero-divider svg {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 /* Service Cards (Premium select alternative) */
 .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
     margin-bottom: 1.5rem;
 }
 
 .service-card {
+    position: relative;
     background-color: var(--bg-card);
     border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 1.5rem 1.25rem;
+    border-radius: var(--border-radius-lg);
+    padding: 1.8rem 1.25rem;
     text-align: center;
     cursor: pointer;
     transition: var(--transition);
@@ -169,6 +238,21 @@ h1, h2, h3, h4 {
     flex-direction: column;
     align-items: center;
     gap: 0.75rem;
+    overflow: hidden;
+}
+
+.service-card::after {
+    content: "\f058";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: var(--accent-gold);
+    font-size: 1.25rem;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: var(--transition);
 }
 
 .service-card:hover {
@@ -183,6 +267,11 @@ h1, h2, h3, h4 {
     box-shadow: 0 0 15px var(--accent-gold-glow);
 }
 
+.service-card.selected::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
 .service-icon {
     font-size: 2rem;
     color: var(--accent-gold);
@@ -191,6 +280,7 @@ h1, h2, h3, h4 {
 .service-name {
     font-weight: 700;
     font-size: 1.1rem;
+    color: var(--text-primary);
 }
 
 .service-price {
@@ -227,20 +317,26 @@ h1, h2, h3, h4 {
 .booking-card {
     background-color: var(--bg-card);
     border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
+    border-top: 4px solid var(--accent-gold);
     padding: 2.5rem;
+    margin-top: -3.5rem;
+    position: relative;
+    z-index: 10;
     margin-bottom: 3rem;
 }
 
 .booking-section-title {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     font-weight: 700;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
     color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
 }
 
 .booking-section-title i {
@@ -255,16 +351,18 @@ h1, h2, h3, h4 {
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 0.88rem;
+    font-weight: 700;
     color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 0.9rem 1.1rem;
+    padding: 0.95rem 1.15rem;
     background-color: var(--bg-input);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
@@ -279,14 +377,14 @@ h1, h2, h3, h4 {
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: var(--border-focus);
+    border-color: var(--accent-gold);
     background-color: var(--bg-card);
-    box-shadow: 0 0 10px var(--accent-gold-glow);
+    box-shadow: 0 0 0 3px var(--accent-gold-glow);
 }
 
 .form-group textarea {
     resize: none;
-    min-height: 100px;
+    min-height: 110px;
 }
 
 /* Date Picker adjustments */
@@ -300,25 +398,27 @@ input[type="date"] {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .slots-status-desc {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--text-secondary);
     display: flex;
-    gap: 1rem;
+    gap: 0.85rem;
 }
 
 .status-indicator {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.3rem;
 }
 
 .status-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
 }
 
@@ -337,19 +437,19 @@ input[type="date"] {
 
 .slots-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: 0.75rem;
     margin-bottom: 2rem;
 }
 
 .slot-btn {
-    padding: 0.85rem 0.5rem;
+    padding: 0.95rem 0.5rem;
     background-color: var(--bg-input);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
     border-radius: var(--border-radius);
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     text-align: center;
     transition: var(--transition);
@@ -365,7 +465,7 @@ input[type="date"] {
     background-color: var(--accent-gold);
     border-color: var(--accent-gold);
     color: white;
-    box-shadow: 0 5px 12px var(--accent-gold-glow);
+    box-shadow: 0 5px 15px var(--accent-gold-glow);
 }
 
 .slot-btn:disabled {
@@ -373,7 +473,7 @@ input[type="date"] {
     color: var(--text-muted);
     border-color: var(--border-color);
     cursor: not-allowed;
-    opacity: 0.4;
+    opacity: 0.45;
     position: relative;
     text-decoration: line-through;
 }
@@ -711,12 +811,85 @@ input[type="date"] {
         padding: 1.5rem 1rem;
     }
     
+    .salon-hero {
+        padding: 4rem 1rem 5.5rem 1rem;
+    }
+
     .salon-title {
-        font-size: 2.25rem;
+        font-size: 2.35rem;
     }
     
     .booking-card {
         padding: 1.5rem;
+        margin-top: -2.5rem;
+    }
+
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .service-card {
+        padding: 1.3rem 0.9rem;
+    }
+
+    .service-icon {
+        font-size: 1.6rem;
+    }
+
+    .service-name {
+        font-size: 0.95rem;
+    }
+
+    .wizard-progress {
+        margin-bottom: 2rem;
+    }
+
+    .step-label {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .salon-title {
+        font-size: 2rem;
+    }
+
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .service-card {
+        padding: 1.1rem 0.6rem;
+        gap: 0.5rem;
+    }
+
+    .service-name {
+        font-size: 0.9rem;
+    }
+
+    .service-price {
+        font-size: 0.85rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .wizard-progress {
+        max-width: 100%;
+    }
+
+    .step-label {
+        display: none; /* Hide labels on very small screens for clean visual */
+    }
+
+    .step-num {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .progress-line {
+        top: 16px;
     }
 }
 
@@ -848,4 +1021,158 @@ input[type="date"] {
 
 .my-appointment-status {
     flex-shrink: 0;
+}
+
+/* Dynamic Salon Status Badges */
+.salon-status-badge {
+    display: inline-block;
+    padding: 0.5rem 1.25rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    border-radius: 50px;
+    margin-bottom: 1rem;
+    margin-left: 0.5rem;
+    transition: var(--transition);
+    vertical-align: middle;
+}
+.salon-status-badge.status-open {
+    background-color: hsla(145, 55%, 35%, 0.1);
+    color: var(--color-success);
+    border: 1px solid hsla(145, 55%, 35%, 0.25);
+    box-shadow: 0 0 10px hsla(145, 55%, 35%, 0.1);
+}
+.salon-status-badge.status-closed {
+    background-color: hsla(0, 70%, 45%, 0.1);
+    color: var(--color-error);
+    border: 1px solid hsla(0, 70%, 45%, 0.25);
+    box-shadow: 0 0 10px hsla(0, 70%, 45%, 0.1);
+}
+.salon-status-badge.status-loading {
+    background-color: var(--bg-input);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+/* Premium micro-interactions & animations */
+.service-card {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s, box-shadow 0.25s, background-color 0.25s !important;
+}
+.service-card:hover {
+    transform: translateY(-4px) scale(1.02) !important;
+}
+.slot-btn {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s, border-color 0.25s, color 0.25s !important;
+}
+.slot-btn:hover:not(:disabled) {
+    transform: scale(1.05) !important;
+}
+.slot-btn:active:not(:disabled) {
+    transform: scale(0.95) !important;
+}
+.btn-primary, .btn-secondary, .btn-danger, .btn-whatsapp {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s, border-color 0.25s, color 0.25s, box-shadow 0.25s !important;
+}
+.btn-primary:hover, .btn-secondary:hover, .btn-danger:hover, .btn-whatsapp:hover {
+    transform: translateY(-2px) scale(1.01) !important;
+}
+.btn-primary:active, .btn-secondary:active, .btn-danger:active, .btn-whatsapp:active {
+    transform: translateY(0) scale(0.98) !important;
+}
+
+/* Wizard multi-step container */
+.wizard-progress {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 2.5rem;
+    max-width: 550px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.progress-line {
+    position: absolute;
+    top: 18px;
+    left: 8%;
+    right: 8%;
+    height: 3px;
+    background-color: var(--border-color);
+    z-index: 1;
+}
+.progress-line-fill {
+    height: 100%;
+    width: 0%;
+    background-color: var(--accent-gold);
+    transition: width 0.3s ease;
+}
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+    position: relative;
+    flex: 1;
+    cursor: pointer;
+}
+.step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--bg-card);
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+.step-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    transition: var(--transition);
+    text-align: center;
+}
+/* Active State */
+.progress-step.active .step-num {
+    border-color: var(--accent-gold);
+    background-color: var(--accent-gold-glow);
+    color: var(--accent-gold);
+    box-shadow: 0 0 10px var(--accent-gold-glow);
+}
+.progress-step.active .step-label {
+    color: var(--accent-gold);
+    font-weight: 700;
+}
+/* Completed State */
+.progress-step.completed .step-num {
+    border-color: var(--color-success);
+    background-color: var(--color-success);
+    color: white;
+}
+.progress-step.completed .step-label {
+    color: var(--color-success);
+}
+
+/* Wizard step wrappers */
+.wizard-step {
+    display: none;
+}
+.wizard-step.active {
+    display: block;
+    animation: wizardFadeIn 0.3s ease-out forwards;
+}
+@keyframes wizardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

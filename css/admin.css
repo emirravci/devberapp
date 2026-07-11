@@ -658,3 +658,100 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Service Manager Admin Specific Styles */
+.services-list {
+    margin-top: 1rem;
+}
+.btn-edit-service, .btn-delete-service {
+    padding: 0.6rem 1rem !important;
+    font-size: 0.85rem !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* =============================================
+   CUSTOMER DIRECTORY TABLE
+   ============================================= */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.admin-table th {
+    background-color: var(--bg-input);
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.8px;
+}
+
+.admin-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.admin-table tbody tr:hover {
+    background-color: var(--bg-hover);
+}
+
+.admin-table td {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.admin-table td strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.btn-note {
+    background-color: hsl(35, 60%, 45%, 0.1) !important;
+    color: var(--accent-gold) !important;
+    border: 1px solid hsl(35, 60%, 45%, 0.2) !important;
+    padding: 0.5rem 0.9rem !important;
+    font-size: 0.85rem !important;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: var(--transition);
+}
+
+.btn-note:hover {
+    background-color: var(--accent-gold) !important;
+    color: white !important;
+    box-shadow: 0 4px 10px var(--accent-gold-glow);
+}
+
+.admin-note-indicator {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    background-color: var(--bg-input);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    border-left: 3px solid var(--accent-gold);
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -111,22 +111,33 @@
                 <button class="admin-tab-btn" id="tab-calisma-saatleri">
                     <i class="fa-solid fa-clock"></i> Çalışma Saatleri
                 </button>
+                <button class="admin-tab-btn" id="tab-hizmetler">
+                    <i class="fa-solid fa-scissors"></i> Hizmetleri Yönet
+                </button>
+                <button class="admin-tab-btn" id="tab-musteriler">
+                    <i class="fa-solid fa-users"></i> Müşteriler
+                </button>
             </div>
 
             <!-- Panel 1: Randevular -->
             <div id="admin-appointments-panel">
-                <div class="filter-tabs">
-                    <button class="filter-btn active" id="filter-all">
-                        <i class="fa-solid fa-border-all"></i> Tümü
-                    </button>
-                    <button class="filter-btn" id="filter-pending">
-                        <i class="fa-solid fa-hourglass-half"></i> Bekleyenler
-                    </button>
-                    <button class="filter-btn" id="filter-approved">
-                        <i class="fa-solid fa-check"></i> Onaylananlar
-                    </button>
-                    <button class="filter-btn" id="filter-rejected">
-                        <i class="fa-solid fa-ban"></i> Reddedilenler
+                <div class="filter-tabs-container" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                    <div class="filter-tabs" style="margin-bottom: 0; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="filter-btn active" id="filter-all">
+                            <i class="fa-solid fa-border-all"></i> Tümü
+                        </button>
+                        <button class="filter-btn" id="filter-pending">
+                            <i class="fa-solid fa-hourglass-half"></i> Bekleyenler
+                        </button>
+                        <button class="filter-btn" id="filter-approved">
+                            <i class="fa-solid fa-check"></i> Onaylananlar
+                        </button>
+                        <button class="filter-btn" id="filter-rejected">
+                            <i class="fa-solid fa-ban"></i> Reddedilenler
+                        </button>
+                    </div>
+                    <button class="btn-primary" id="btn-add-manual-appointment-trigger" style="width: auto; padding: 0.75rem 1.5rem; font-size: 0.95rem; box-shadow: none;">
+                        <i class="fa-solid fa-calendar-plus"></i> Manuel Randevu Ekle
                     </button>
                 </div>
                 <div class="appointments-list" id="admin-appointments-list"></div>
@@ -157,6 +168,36 @@
                         </button>
                     </div>
                 </div>
+
+                <div class="holiday-config-card" style="margin-top: 1.5rem;">
+                    <h3><i class="fa-solid fa-business-time"></i> Randevu Saat Dağılım Modu</h3>
+                    <p>Müşteri rezervasyon ekranındaki randevu saatlerinin nasıl üretileceğini seçin.</p>
+                    <div class="holiday-config-row">
+                        <select id="select-slot-strategy">
+                            <option value="hourly">Sabit Saatlik (Her 1 saatte bir)</option>
+                            <option value="half_hourly">Sabit Yarım Saatlik (Her 30 dakikada bir)</option>
+                            <option value="service_based">Hizmet Süresine Göre (Dinamik ve Akıllı Mod)</option>
+                        </select>
+                        <button class="btn-primary" id="btn-save-strategy">
+                            <i class="fa-solid fa-floppy-disk"></i> Kaydet
+                        </button>
+                    </div>
+                </div>
+
+                <div class="holiday-config-card" style="margin-top: 1.5rem;">
+                    <h3><i class="fa-solid fa-cookie-bite"></i> Günlük Mola / Yemek Saati</h3>
+                    <p>Mola başlangıç ve bitiş saatlerini belirleyin. Bu aralıkta randevu verilmeyecektir.</p>
+                    <div class="holiday-config-row" style="display: flex; gap: 1rem; align-items: center;">
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex: 1;">
+                            <input type="time" id="select-break-start" style="padding: 0.75rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); background-color: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: 1rem; width: 100%;">
+                            <span style="color: var(--text-secondary); font-weight: bold;">-</span>
+                            <input type="time" id="select-break-end" style="padding: 0.75rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); background-color: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: 1rem; width: 100%;">
+                        </div>
+                        <button class="btn-primary" id="btn-save-break" style="width: auto;">
+                            <i class="fa-solid fa-floppy-disk"></i> Kaydet
+                        </button>
+                    </div>
+                </div>
                 <div class="scheduler-slots-editor">
                     <div class="add-slot-form">
                         <input type="time" id="new-slot-time">
@@ -171,8 +212,204 @@
                     <div class="slots-edit-grid" id="slots-edit-grid"></div>
                 </div>
             </div>
+
+            <!-- Panel 3: Hizmetleri Yönet -->
+            <div id="admin-services-panel" class="scheduler-panel" style="display:none;">
+                <div class="scheduler-desc" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h2><i class="fa-solid fa-scissors"></i> Hizmetleri Yönet</h2>
+                        <p>Müşterilerin rezervasyon ekranında göreceği hizmetleri, sürelerini, fiyatlarını ve açıklamalarını buradan düzenleyebilirsiniz.</p>
+                    </div>
+                    <button class="btn-primary" id="btn-add-service-trigger" style="width: auto; padding: 0.75rem 1.5rem; font-size: 0.95rem;">
+                        <i class="fa-solid fa-plus"></i> Yeni Hizmet Ekle
+                    </button>
+                </div>
+                
+                <div class="services-list" id="admin-services-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- JS ile dinamik olarak doldurulacaktır -->
+                    <div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem; color: var(--accent-gold); margin-bottom: 0.5rem; display: block;"></i>
+                        Hizmetler yükleniyor...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 4: Müşteriler -->
+            <div id="admin-customers-panel" class="scheduler-panel" style="display:none;">
+                <div class="scheduler-desc" style="margin-bottom: 2rem;">
+                    <h2><i class="fa-solid fa-users"></i> Müşteri Yönetimi</h2>
+                    <p>Sisteminizde kayıtlı benzersiz müşterileri, toplam ziyaretlerini, harcamalarını ve admin notlarını görüntüleyebilirsiniz.</p>
+                </div>
+                
+                <div class="table-responsive" style="margin-top: 1.5rem; background-color: var(--bg-card); border-radius: var(--border-radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden;">
+                    <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border-color); background-color: var(--bg-input);">
+                                <th style="padding: 1rem 1.5rem; font-weight: 700; color: var(--text-primary);">Ad Soyad</th>
+                                <th style="padding: 1rem 1.5rem; font-weight: 700; color: var(--text-primary);">Telefon</th>
+                                <th style="padding: 1rem 1.5rem; font-weight: 700; color: var(--text-primary);">Son Ziyaret</th>
+                                <th style="padding: 1rem 1.5rem; font-weight: 700; color: var(--text-primary);">Toplam Ziyaret</th>
+                                <th style="padding: 1rem 1.5rem; font-weight: 700; color: var(--text-primary);">Toplam Kazanç</th>
+                                <th style="padding: 1rem 1.5rem; font-weight: 700; color: var(--text-primary); text-align: center;">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-customers-list">
+                            <!-- JS ile dinamik doldurulacak -->
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 3rem 0;">
+                                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem; color: var(--accent-gold); margin-bottom: 0.5rem; display: block; margin-left: auto; margin-right: auto;"></i>
+                                    Müşteriler yükleniyor...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </section>
+
+    <!-- HİZMET EKLE / DÜZENLE MODALİ -->
+    <div id="service-modal" class="modal-backdrop">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="service-modal-title"><i class="fa-solid fa-scissors"></i> Yeni Hizmet Ekle</h3>
+                <button type="button" class="btn-close-modal" id="btn-close-service-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <form id="service-form">
+                    <input type="hidden" id="service-edit-id">
+                    
+                    <div class="form-group">
+                        <label for="service-name-input">Hizmet Adı *</label>
+                        <input type="text" id="service-name-input" placeholder="Örn: Saç Kesimi" required>
+                    </div>
+                    
+                    <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label for="service-price-input">Fiyat (₺) *</label>
+                            <input type="number" id="service-price-input" placeholder="Örn: 250" min="0" required>
+                        </div>
+                        <div>
+                            <label for="service-duration-input">Süre (Dakika) *</label>
+                            <input type="number" id="service-duration-input" placeholder="Örn: 45" min="5" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="service-icon-input">İkon (FontAwesome Sınıfı) *</label>
+                        <select id="service-icon-input" required>
+                            <option value="fa-scissors">Makas (fa-scissors)</option>
+                            <option value="fa-user-tie">Erkek Tıraş (fa-user-tie)</option>
+                            <option value="fa-face-grimace">Sakal / Yüz (fa-face-grimace)</option>
+                            <option value="fa-spa">Cilt Bakımı (fa-spa)</option>
+                            <option value="fa-spray-can-sparkles">Fön / Sprey (fa-spray-can-sparkles)</option>
+                            <option value="fa-soap">Yıkama / Şampuan (fa-soap)</option>
+                            <option value="fa-gem">Premium / Masaj (fa-gem)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="service-desc-input">Açıklama</label>
+                        <textarea id="service-desc-input" placeholder="Hizmetin içeriği hakkında kısa bilgi..." style="min-height: 80px;"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                        <button type="button" class="btn-secondary" id="btn-cancel-service" style="flex: 1; padding: 0.9rem;">
+                            Vazgeç
+                        </button>
+                        <button type="submit" class="btn-primary" id="btn-save-service" style="flex: 1; padding: 0.9rem; box-shadow: none;">
+                            Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MANUEL RANDEVU EKLEME MODALİ -->
+    <div id="manual-appointment-modal" class="modal-backdrop">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-calendar-plus"></i> Manuel Randevu Ekle</h3>
+                <button type="button" class="btn-close-modal" id="btn-close-manual-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="manual-appointment-form">
+                    <div class="form-group">
+                        <label for="manual-customer-name">Müşteri Adı Soyadı *</label>
+                        <input type="text" id="manual-customer-name" placeholder="Ahmet Yılmaz" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="manual-customer-phone">Telefon Numarası *</label>
+                        <input type="tel" id="manual-customer-phone" placeholder="0555 123 4567" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="manual-service-select">Hizmet Seçimi *</label>
+                        <select id="manual-service-select" required>
+                            <!-- JS ile dinamik doldurulacak -->
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label for="manual-date-input">Randevu Tarihi *</label>
+                            <input type="date" id="manual-date-input" required>
+                        </div>
+                        <div>
+                            <label for="manual-time-input">Saat (HH:MM) *</label>
+                            <input type="time" id="manual-time-input" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="manual-notes">Randevu Notu</label>
+                        <textarea id="manual-notes" placeholder="Müşterinin özel istekleri..." style="min-height: 80px;"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                        <button type="button" class="btn-secondary" id="btn-cancel-manual" style="flex: 1; padding: 0.9rem;">
+                            Vazgeç
+                        </button>
+                        <button type="submit" class="btn-primary" id="btn-save-manual" style="flex: 1; padding: 0.9rem; box-shadow: none;">
+                            Randevu Ekle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÜŞTERİ NOTU MODALİ -->
+    <div id="customer-note-modal" class="modal-backdrop">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3 id="customer-note-title"><i class="fa-solid fa-user-tag"></i> Müşteri Notu Düzenle</h3>
+                <button type="button" class="btn-close-modal" id="btn-close-note-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    Bu not sadece berber (admin) panelinde görünecektir, müşteri bu notu göremez.
+                </p>
+                <form id="customer-note-form">
+                    <input type="hidden" id="customer-note-phone">
+                    <div class="form-group">
+                        <label for="customer-note-text">Yönetici Notu</label>
+                        <textarea id="customer-note-text" placeholder="Örn: Yanları 3 numara istiyor. Sert kahve sever." style="min-height: 120px;" required></textarea>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                        <button type="button" class="btn-secondary" id="btn-cancel-note" style="flex: 1; padding: 0.9rem;">
+                            Vazgeç
+                        </button>
+                        <button type="submit" class="btn-primary" id="btn-save-note" style="flex: 1; padding: 0.9rem; box-shadow: none;">
+                            Notu Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-core.js" type="module"></script>

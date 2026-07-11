@@ -19,6 +19,19 @@ const appointmentsModal = document.getElementById('appointments-modal');
 const btnCloseAppointmentsModal = document.getElementById('btn-close-appointments-modal');
 const myAppointmentsList = document.getElementById('my-appointments-list');
 
+// Randevu Onay Modali elements
+const confirmModal = document.getElementById('confirm-booking-modal');
+const btnCloseConfirmModal = document.getElementById('btn-close-confirm-modal');
+const btnCancelConfirm = document.getElementById('btn-cancel-confirm');
+const btnFinalConfirm = document.getElementById('btn-final-confirm');
+
+const confirmService = document.getElementById('confirm-service');
+const confirmDurationPrice = document.getElementById('confirm-duration-price');
+const confirmDate = document.getElementById('confirm-date');
+const confirmTime = document.getElementById('confirm-time');
+const confirmName = document.getElementById('confirm-name');
+const confirmPhone = document.getElementById('confirm-phone');
+
 // Success view elements
 const successView = document.getElementById('success-view');
 const bookingView = document.getElementById('booking-view');
@@ -45,25 +58,128 @@ function showCustomerView(viewId) {
 }
 
 // =============================================
+// SERVICES LOADING (DYNAMIC)
+// =============================================
+async function loadServices() {
+    showLoader();
+    try {
+        const { data, error } = await supabase
+            .from('services')
+            .select('*')
+            .order('price', { ascending: true });
+
+        if (error) throw error;
+
+        renderServices(data || []);
+    } catch (err) {
+        console.error("Hizmetler yüklenemedi:", err);
+        showToast("Hizmet listesi yüklenirken hata oluştu.", "error");
+        servicesGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; color: var(--color-error); padding: 1.5rem 0; font-weight: 600;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                Hizmet listesi alınamadı.
+            </div>
+        `;
+    } finally {
+        hideLoader();
+    }
+}
+
+function renderServices(services) {
+    servicesGrid.innerHTML = '';
+    if (services.length === 0) {
+        servicesGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 2rem 0;">
+                Aktif hizmet bulunmamaktadır.
+            </div>
+        `;
+        return;
+    }
+
+    services.forEach(service => {
+        const card = document.createElement('div');
+        card.className = 'service-card';
+        card.setAttribute('data-service', service.name);
+        card.setAttribute('data-price', service.price);
+        card.setAttribute('data-duration', service.duration);
+
+        const iconClass = service.icon || 'fa-scissors';
+
+        card.innerHTML = `
+            <div class="service-icon"><i class="fa-solid ${iconClass}"></i></div>
+            <div class="service-name">${service.name}</div>
+            <div class="service-price">${service.price} ₺</div>
+            <div class="service-duration"><i class="fa-regular fa-clock"></i> ${service.duration} dk</div>
+            <div class="service-desc">${service.description || ''}</div>
+        `;
+
+        card.addEventListener('click', () => {
+            servicesGrid.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedService = service.name;
+            selectedPrice = parseFloat(service.price);
+            selectedDuration = parseInt(service.duration || '30', 10);
+            validateForm();
+            // Automatically advance to Step 2
+            setTimeout(() => goToStep(2), 220);
+        });
+
+        servicesGrid.appendChild(card);
+    });
+}
+
+// =============================================
 // INITIALIZATION
 // =============================================
+let currentStep = 1;
+
+function goToStep(stepNumber) {
+    if (stepNumber < 1 || stepNumber > 3) return;
+
+    // Hide all steps, show current
+    document.querySelectorAll('.wizard-step').forEach(step => {
+        step.classList.remove('active');
+    });
+    const targetStep = document.getElementById(`step-${stepNumber}`);
+    if (targetStep) targetStep.classList.add('active');
+
+    // Update progress indicator
+    const steps = document.querySelectorAll('.progress-step');
+    steps.forEach(step => {
+        const stepVal = parseInt(step.getAttribute('data-step'), 10);
+        step.classList.remove('active', 'completed');
+        if (stepVal === stepNumber) {
+            step.classList.add('active');
+        } else if (stepVal < stepNumber) {
+            step.classList.add('completed');
+        }
+    });
+
+    // Update progress line fill width
+    const lineFill = document.getElementById('progress-line-fill');
+    if (lineFill) {
+        const percent = ((stepNumber - 1) / 2) * 100;
+        lineFill.style.width = `${percent}%`;
+    }
+
+    currentStep = stepNumber;
+}
+
 function initBookingEvents() {
-    // Min date (cannot select past dates)
-    const today = new Date().toLocaleDateString('en-CA');
+    // Load services from DB
+    loadServices();
+    // Update salon status open/closed badge
+    updateSalonStatusBadge();
+
+    // Min date (cannot select past dates) and Max date (max 30 days ahead)
+    const todayObj = new Date();
+    const today = todayObj.toLocaleDateString('en-CA');
     bookingDateInput.min = today;
 
-    // Service cards
-    const cards = servicesGrid.querySelectorAll('.service-card');
-    cards.forEach(card => {
-        card.addEventListener('click', () => {
-            cards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            selectedService = card.getAttribute('data-service');
-            selectedPrice = parseFloat(card.getAttribute('data-price'));
-            selectedDuration = parseInt(card.getAttribute('data-duration') || '30', 10);
-            validateForm();
-        });
-    });
+    const maxDateObj = new Date();
+    maxDateObj.setDate(todayObj.getDate() + 30);
+    const maxDate = maxDateObj.toLocaleDateString('en-CA');
+    bookingDateInput.max = maxDate;
 
     // Date change
     bookingDateInput.addEventListener('change', async (e) => {
@@ -105,8 +221,36 @@ function initBookingEvents() {
         validateForm();
     });
 
-    // Form submit
-    bookingForm.addEventListener('submit', handleBookingSubmit);
+    // Form submit -> open confirmation modal first
+    bookingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        openConfirmModal();
+    });
+
+    // Confirm Modal events
+    btnCloseConfirmModal.addEventListener('click', () => confirmModal.classList.remove('active'));
+    btnCancelConfirm.addEventListener('click', () => confirmModal.classList.remove('active'));
+    btnFinalConfirm.addEventListener('click', handleBookingSubmit);
+
+    // Wizard navigation buttons
+    document.getElementById('btn-next-to-2').addEventListener('click', () => goToStep(2));
+    document.getElementById('btn-back-to-1').addEventListener('click', () => goToStep(1));
+    document.getElementById('btn-next-to-3').addEventListener('click', () => goToStep(3));
+    document.getElementById('btn-back-to-2').addEventListener('click', () => goToStep(2));
+
+    // Wizard step indicators clicks
+    document.querySelectorAll('.progress-step').forEach(step => {
+        step.addEventListener('click', () => {
+            const stepVal = parseInt(step.getAttribute('data-step'), 10);
+            if (stepVal === 1) {
+                goToStep(1);
+            } else if (stepVal === 2 && selectedService) {
+                goToStep(2);
+            } else if (stepVal === 3 && selectedService && selectedDate && selectedTime) {
+                goToStep(3);
+            }
+        });
+    });
 
     // My appointments modal
     btnMyAppointments.addEventListener('click', openAppointmentsModal);
@@ -120,6 +264,16 @@ function initBookingEvents() {
         resetBookingState();
         showCustomerView('booking');
     });
+}
+
+function openConfirmModal() {
+    confirmService.innerText = selectedService;
+    confirmDurationPrice.innerText = `${selectedDuration} dk / ${selectedPrice} ₺`;
+    confirmDate.innerText = formatTurkishDate(selectedDate);
+    confirmTime.innerText = selectedTime;
+    confirmName.innerText = customerNameInput.value.trim();
+    confirmPhone.innerText = customerPhoneInput.value.trim();
+    confirmModal.classList.add('active');
 }
 
 initBookingEvents();
@@ -136,15 +290,43 @@ function resetBookingState() {
     selectedPrice = 0;
     selectedDate = '';
     selectedTime = '';
-    btnBook.disabled = true;
+    goToStep(1);
+    validateForm();
 }
 
 function validateForm() {
     const customerName = customerNameInput.value.trim();
     const customerPhoneDigits = customerPhoneInput.value.replace(/\D/g, '');
     const isPhoneValid = customerPhoneDigits.length === 10 || customerPhoneDigits.length === 11;
+
+    // Enable/disable Wizard navigation buttons
+    const btnNextTo2 = document.getElementById('btn-next-to-2');
+    const btnNextTo3 = document.getElementById('btn-next-to-3');
+
+    if (btnNextTo2) btnNextTo2.disabled = !selectedService;
+    if (btnNextTo3) btnNextTo3.disabled = !(selectedService && selectedDate && selectedTime);
+
     const isValid = selectedService && selectedDate && selectedTime && customerName && isPhoneValid;
     btnBook.disabled = !isValid;
+}
+
+// =============================================
+// TIME SLOTS
+// =============================================
+// Time conversion helper functions
+function timeToMinutes(timeStr) {
+    if (!timeStr) return 0;
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return 0;
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    return h * 60 + m;
+}
+
+function minutesToTime(minutes) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
 // =============================================
@@ -156,21 +338,26 @@ async function loadAvailableTimeSlots(dateString) {
         const { data: settingsData, error: settingsError } = await supabase
             .from('settings')
             .select('key, value')
-            .in('key', ['working_slots', 'weekly_holiday']);
+            .in('key', ['working_slots', 'weekly_holiday', 'slot_strategy', 'break_hours']);
 
         if (settingsError) throw settingsError;
 
         const workingSlotsSetting = settingsData.find(s => s.key === 'working_slots');
         const holidaySetting = settingsData.find(s => s.key === 'weekly_holiday');
+        const strategySetting = settingsData.find(s => s.key === 'slot_strategy');
+        const breakSetting = settingsData.find(s => s.key === 'break_hours');
 
         const activeSlots = workingSlotsSetting ? workingSlotsSetting.value : [
             "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"
         ];
         const holidayDay = holidaySetting ? holidaySetting.value : 'none';
+        const slotStrategy = strategySetting ? strategySetting.value : 'half_hourly';
+        const breakHours = breakSetting ? breakSetting.value : null;
 
         // Check holiday
         if (holidayDay !== 'none') {
-            const selectedDateObj = new Date(dateString);
+            const [year, month, day] = dateString.split('-').map(Number);
+            const selectedDateObj = new Date(year, month - 1, day);
             const selectedDay = selectedDateObj.getDay();
             if (selectedDay.toString() === holidayDay) {
                 renderHolidayMessage(holidayDay);
@@ -178,25 +365,14 @@ async function loadAvailableTimeSlots(dateString) {
             }
         }
 
-        // Fetch booked times
+        // Fetch booked times and their durations
         const { data: bookedData, error: bookedError } = await supabase
             .from('appointments')
-            .select('appointment_time')
+            .select('appointment_time, service_duration')
             .eq('appointment_date', dateString)
             .neq('status', 'rejected');
 
-        const bookedTimes = (bookedData || []).map(app => {
-            const time = app.appointment_time;
-            if (time && time.includes(':')) {
-                const parts = time.split(':');
-                if (parts.length >= 2) {
-                    return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
-                }
-            }
-            return time;
-        });
-
-        renderTimeSlots(activeSlots, bookedTimes, dateString);
+        renderTimeSlots(activeSlots, bookedData || [], dateString, slotStrategy, breakHours);
     } catch (err) {
         console.error("Randevu saatleri yüklenemedi:", err);
         showToast("Randevu saatleri yüklenirken hata oluştu.", "error");
@@ -205,7 +381,7 @@ async function loadAvailableTimeSlots(dateString) {
     }
 }
 
-function renderTimeSlots(activeSlots, bookedTimes, dateString) {
+function renderTimeSlots(activeSlots, bookedAppointments, dateString, slotStrategy, breakHours) {
     bookingSlotsGrid.innerHTML = '';
     const now = new Date();
     const todayStr = now.toLocaleDateString('en-CA');
@@ -223,7 +399,39 @@ function renderTimeSlots(activeSlots, bookedTimes, dateString) {
         return;
     }
 
-    activeSlots.forEach(slot => {
+    let slotsToShow = [];
+
+    if (slotStrategy === 'hourly') {
+        slotsToShow = activeSlots.filter(slot => slot.endsWith(':00'));
+    } else if (slotStrategy === 'half_hourly') {
+        slotsToShow = activeSlots.filter(slot => slot.endsWith(':00') || slot.endsWith(':30'));
+    } else if (slotStrategy === 'service_based') {
+        const sortedActive = [...activeSlots].sort();
+        const startMin = timeToMinutes(sortedActive[0]);
+        const endMin = timeToMinutes(sortedActive[sortedActive.length - 1]);
+        
+        // Dynamic slots generated every 15 mins up to closing time minus chosen service duration
+        // We allow starting up to 1 hour before the closing slot to make it flexible
+        const maxStartMin = endMin + 60 - selectedDuration;
+
+        for (let m = startMin; m <= maxStartMin; m += 15) {
+            slotsToShow.push(minutesToTime(m));
+        }
+    } else {
+        slotsToShow = activeSlots;
+    }
+
+    if (slotsToShow.length === 0) {
+        bookingSlotsGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); font-size: 0.9rem; padding: 1rem 0;">
+                Seçilen hizmet süresi için uygun saat aralığı bulunamadı.
+            </div>
+        `;
+        bookingSlotsContainer.style.display = 'block';
+        return;
+    }
+
+    slotsToShow.forEach(slot => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'slot-btn';
@@ -237,11 +445,41 @@ function renderTimeSlots(activeSlots, bookedTimes, dateString) {
             }
         }
 
-        const isBooked = bookedTimes.includes(slot);
+        // Check if overlaps with break hours
+        let isBreak = false;
+        if (breakHours && breakHours.start && breakHours.end) {
+            const slotStart = timeToMinutes(slot);
+            const slotEnd = slotStart + (slotStrategy === 'service_based' ? selectedDuration : 30);
+            const breakStart = timeToMinutes(breakHours.start);
+            const breakEnd = timeToMinutes(breakHours.end);
 
-        if (isBooked || isPastTime) {
+            if (slotStart < breakEnd && slotEnd > breakStart) {
+                isBreak = true;
+            }
+        }
+
+        let isBooked = false;
+
+        if (slotStrategy === 'service_based') {
+            const slotStart = timeToMinutes(slot);
+            const slotEnd = slotStart + selectedDuration;
+
+            isBooked = bookedAppointments.some(app => {
+                const appStart = timeToMinutes(app.appointment_time);
+                const appDur = app.service_duration || 30; // fallback to 30 mins
+                const appEnd = appStart + appDur;
+
+                // Overlap check
+                return (slotStart < appEnd && slotEnd > appStart);
+            });
+        } else {
+            const formattedSlot = formatTime(slot);
+            isBooked = bookedAppointments.some(app => formatTime(app.appointment_time) === formattedSlot);
+        }
+
+        if (isBooked || isPastTime || isBreak) {
             btn.disabled = true;
-            btn.title = isBooked ? "Dolu" : "Geçmiş Saat";
+            btn.title = isBooked ? "Dolu" : (isBreak ? "Mola / Yemek Saati" : "Geçmiş Saat");
         }
 
         btn.addEventListener('click', () => {
@@ -249,6 +487,8 @@ function renderTimeSlots(activeSlots, bookedTimes, dateString) {
             btn.classList.add('active');
             selectedTime = slot;
             validateForm();
+            // Auto transition to step 3
+            setTimeout(() => goToStep(3), 220);
         });
 
         bookingSlotsGrid.appendChild(btn);
@@ -293,7 +533,8 @@ function formatTime(timeStr) {
 // BOOKING SUBMIT
 // =============================================
 async function handleBookingSubmit(e) {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    confirmModal.classList.remove('active');
     const customerName = customerNameInput.value.trim();
     const customerPhone = customerPhoneInput.value.trim();
     const notes = customerNotesInput.value.trim();
@@ -312,6 +553,7 @@ async function handleBookingSubmit(e) {
                 customer_name: customerName,
                 customer_phone: customerPhone,
                 service_name: selectedService,
+                service_duration: selectedDuration,
                 appointment_date: selectedDate,
                 appointment_time: selectedTime,
                 status: 'pending',
@@ -461,5 +703,68 @@ async function openAppointmentsModal() {
     } catch (err) {
         console.error("Randevular yüklenirken hata oluştu:", err);
         myAppointmentsList.innerHTML = '<div style="color: var(--color-error); text-align: center; padding: 1rem;">Randevular yüklenirken bir hata oluştu.</div>';
+    }
+}
+
+async function updateSalonStatusBadge() {
+    const statusBadge = document.getElementById('salon-status-badge');
+    if (!statusBadge) return;
+
+    try {
+        const { data: settingsData, error: settingsError } = await supabase
+            .from('settings')
+            .select('key, value')
+            .in('key', ['working_slots', 'weekly_holiday']);
+
+        if (settingsError) throw settingsError;
+
+        const workingSlotsSetting = settingsData.find(s => s.key === 'working_slots');
+        const holidaySetting = settingsData.find(s => s.key === 'weekly_holiday');
+
+        const activeSlots = workingSlotsSetting ? workingSlotsSetting.value : [];
+        const holidayDay = holidaySetting ? holidaySetting.value : 'none';
+
+        const now = new Date();
+        const currentDayNum = now.getDay(); // 0: Pazar, 1: Pazartesi...
+        
+        // Check if holiday
+        if (holidayDay !== 'none' && currentDayNum.toString() === holidayDay) {
+            statusBadge.innerText = "Salon: Kapalı (Tatil Günü)";
+            statusBadge.className = "salon-status-badge status-closed";
+            return;
+        }
+
+        if (activeSlots.length === 0) {
+            statusBadge.innerText = "Salon: Kapalı";
+            statusBadge.className = "salon-status-badge status-closed";
+            return;
+        }
+
+        // Sort slots to get start/end time
+        const sortedSlots = [...activeSlots].sort();
+        const firstSlot = sortedSlots[0];
+        const lastSlot = sortedSlots[sortedSlots.length - 1];
+
+        const currentHour = now.getHours();
+        const currentMin = now.getMinutes();
+
+        const [startHour, startMin] = firstSlot.split(':').map(Number);
+        const [endHour, endMin] = lastSlot.split(':').map(Number);
+
+        const startTimeVal = startHour * 60 + startMin;
+        const endTimeVal = (endHour + 1) * 60; // 1 hour after the last slot starts
+        const currentTimeVal = currentHour * 60 + currentMin;
+
+        if (currentTimeVal >= startTimeVal && currentTimeVal < endTimeVal) {
+            statusBadge.innerText = "Salon: Açık";
+            statusBadge.className = "salon-status-badge status-open";
+        } else {
+            statusBadge.innerText = "Salon: Kapalı (Mesai Dışı)";
+            statusBadge.className = "salon-status-badge status-closed";
+        }
+    } catch (err) {
+        console.error("Salon durum göstergesi güncellenemedi:", err);
+        statusBadge.innerText = "Salon Durumu Bilinmiyor";
+        statusBadge.className = "salon-status-badge status-loading";
     }
 }

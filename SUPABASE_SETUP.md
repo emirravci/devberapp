@@ -38,6 +38,7 @@ create table appointments (
     appointment_date date not null,
     appointment_time text not null, -- Örn: "10:00", "11:30"
     status text default 'pending' not null, -- 'pending', 'approved', 'rejected'
+    service_duration integer default 30, -- dakika cinsinden
     notes text,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -53,14 +54,38 @@ create table settings (
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 3. Row Level Security (RLS) Aktifleştirme
+-- 3. Services Table (Dinamik Hizmetler)
+create table services (
+    id uuid primary key default gen_random_uuid(),
+    name text not null,
+    price numeric not null,
+    duration integer not null, -- dakika cinsinden
+    description text,
+    icon text default 'fa-scissors' not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 4. Customer Notes Table (Müşteri Özel Notları)
+create table customer_notes (
+    phone text primary key,
+    admin_note text,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 5. Row Level Security (RLS) Aktifleştirme
 alter table appointments enable row level security;
 alter table settings enable row level security;
+alter table services enable row level security;
+alter table customer_notes enable row level security;
 
--- 4. RLS Politikaları (Security Policies)
+-- 5. RLS Politikaları (Security Policies)
 -- Müşteriler giriş yapmadan randevu oluşturabilir
 create policy "Allow public inserts on appointments"
 on appointments for insert to public with check (true);
+
+-- Müşteriler randevu durumlarını okuyabilir (Randevularım modalı için)
+create policy "Allow public select on appointments"
+on appointments for select to public using (true);
 
 -- Sadece giriş yapmış admin randevuları listeleyebilir ve yönetebilir
 create policy "Allow authenticated admins all actions on appointments"
@@ -74,11 +99,42 @@ on settings for select to public using (true);
 create policy "Allow authenticated admins all actions on settings"
 on settings for all to authenticated using (true) with check (true);
 
--- 5. Varsayılan Çalışma Saatlerinin Eklenmesi (İlk Kurulum)
+-- Müşteriler hizmetleri okuyabilir
+create policy "Allow public select on services"
+on services for select to public using (true);
+
+-- Sadece giriş yapmış admin hizmetleri düzenleyebilir
+create policy "Allow authenticated admins all actions on services"
+on services for all to authenticated using (true) with check (true);
+
+-- Sadece giriş yapmış admin müşteri notlarını yönetebilir (müşteri notları için)
+create policy "Allow authenticated admins all actions on customer_notes"
+on customer_notes for all to authenticated using (true) with check (true);
+
+-- 6. Varsayılan Çalışma Saatlerinin Eklenmesi (İlk Kurulum)
 insert into settings (key, value) values (
     'working_slots', 
     '["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]'::jsonb
 ) on conflict (key) do nothing;
+
+insert into settings (key, value) values (
+    'slot_strategy',
+    '"half_hourly"'::jsonb
+) on conflict (key) do nothing;
+
+insert into settings (key, value) values (
+    'break_hours',
+    '{"start": "12:00", "end": "13:00"}'::jsonb
+) on conflict (key) do nothing;
+
+-- 8. Varsayılan Hizmetlerin Eklenmesi
+insert into services (name, price, duration, description, icon) values
+('Saç Kesimi', 250, 45, 'Yıkama ve fön dahildir.', 'fa-user-tie'),
+('Sakal Kesimi', 150, 30, 'Sakal bakımı ve özel losyon.', 'fa-face-grimace'),
+('Saç & Sakal', 350, 60, 'Saç-sakal kesimi, yıkama ve bakım.', 'fa-scissors'),
+('Cilt Bakımı', 200, 40, 'Maske, buhar ve nemlendirici bakım.', 'fa-spa')
+on conflict do nothing;
+```
 ```
 
 ---

@@ -22,125 +22,164 @@
 
     <!-- 1. MÜŞTERİ REZERVASYON EKRANI -->
     <section id="booking-view" class="view-section active">
-        <div class="container">
-            <div class="salon-header">
+
+        <!-- Hero Section — Full Width -->
+        <div class="salon-hero">
+            <div class="hero-bg-pattern" aria-hidden="true"></div>
+            <div class="hero-content">
+                <div class="hero-logo-icon">
+                    <i class="fa-solid fa-scissors"></i>
+                </div>
                 <span class="salon-badge">Premium Hizmet</span>
                 <h1 class="salon-title">Saloon Gold</h1>
-                <p class="salon-tagline">Tarzınızı yansıtan profesyonel dokunuşlar...</p>
-                <button type="button" class="btn-secondary" id="btn-my-appointments" style="margin-top: 1rem; font-size: 0.85rem; padding: 0.5rem 1.25rem;">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Randevularım
-                </button>
+                <p class="salon-tagline">Tarzınızı yansıtan profesyonel dokunuşlar</p>
+                <div class="hero-actions">
+                    <span id="salon-status-badge" class="salon-status-badge status-loading">
+                        <span class="status-pulse"></span> Yükleniyor...
+                    </span>
+                    <button type="button" class="btn-ghost" id="btn-my-appointments">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Randevularım
+                    </button>
+                </div>
             </div>
+            <div class="hero-divider">
+                <svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0,60 C300,0 900,60 1200,0 L1200,60 Z" fill="var(--bg-main)"/>
+                </svg>
+            </div>
+        </div>
 
+        <!-- Booking Form Container -->
+        <div class="container">
             <div class="booking-card">
-                <form id="booking-form">
-
-                    <!-- Adım 1: Hizmet Seçimi -->
-                    <div class="booking-section-title">
-                        <i class="fa-solid fa-scissors"></i>
-                        <h3>1. Hizmet Seçin</h3>
+                
+                <!-- Sihirbaz İlerleme Adımları (Progress Bar) -->
+                <div class="wizard-progress" id="wizard-progress">
+                    <div class="progress-line">
+                        <div class="progress-line-fill" id="progress-line-fill"></div>
                     </div>
+                    <div class="progress-step active" data-step="1">
+                        <span class="step-num">1</span>
+                        <span class="step-label">Hizmet Seçimi</span>
+                    </div>
+                    <div class="progress-step" data-step="2">
+                        <span class="step-num">2</span>
+                        <span class="step-label">Tarih & Saat</span>
+                    </div>
+                    <div class="progress-step" data-step="3">
+                        <span class="step-num">3</span>
+                        <span class="step-label">İletişim Bilgileri</span>
+                    </div>
+                </div>
 
-                    <div class="services-grid" id="services-grid">
-                        <div class="service-card" data-service="Saç Kesimi" data-price="250" data-duration="45">
-                            <div class="service-icon"><i class="fa-solid fa-user-tie"></i></div>
-                            <div class="service-name">Saç Kesimi</div>
-                            <div class="service-price">250 ₺</div>
-                            <div class="service-duration"><i class="fa-regular fa-clock"></i> 45 dk</div>
-                            <div class="service-desc">Yıkama ve fön dahildir.</div>
+                <form id="booking-form">
+                    
+                    <!-- Adım 1: Hizmet Seçimi -->
+                    <div class="wizard-step active" id="step-1">
+                        <div class="booking-section-title">
+                            <i class="fa-solid fa-scissors"></i>
+                            <h3>Hizmet Seçin</h3>
                         </div>
-                        <div class="service-card" data-service="Sakal Kesimi" data-price="150" data-duration="30">
-                            <div class="service-icon"><i class="fa-solid fa-face-grimace"></i></div>
-                            <div class="service-name">Sakal Kesimi</div>
-                            <div class="service-price">150 ₺</div>
-                            <div class="service-duration"><i class="fa-regular fa-clock"></i> 30 dk</div>
-                            <div class="service-desc">Sakal bakımı ve özel losyon.</div>
+                        <div class="services-grid" id="services-grid">
+                            <!-- JS ile dinamik olarak doldurulacaktır -->
+                            <div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 2rem 0;">
+                                <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem; color: var(--accent-gold); margin-bottom: 0.5rem; display: block;"></i>
+                                Hizmetler yükleniyor...
+                            </div>
                         </div>
-                        <div class="service-card" data-service="Saç &amp; Sakal" data-price="350" data-duration="60">
-                            <div class="service-icon"><i class="fa-solid fa-scissors"></i></div>
-                            <div class="service-name">Saç &amp; Sakal</div>
-                            <div class="service-price">350 ₺</div>
-                            <div class="service-duration"><i class="fa-regular fa-clock"></i> 60 dk</div>
-                            <div class="service-desc">Saç-sakal kesimi, yıkama ve bakım.</div>
-                        </div>
-                        <div class="service-card" data-service="Cilt Bakımı" data-price="200" data-duration="40">
-                            <div class="service-icon"><i class="fa-solid fa-spa"></i></div>
-                            <div class="service-name">Cilt Bakımı</div>
-                            <div class="service-price">200 ₺</div>
-                            <div class="service-duration"><i class="fa-regular fa-clock"></i> 40 dk</div>
-                            <div class="service-desc">Maske, buhar ve nemlendirici bakım.</div>
+                        <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+                            <button type="button" class="btn-primary" id="btn-next-to-2" disabled style="width: auto; padding: 0.75rem 2rem;">
+                                Devam Et <i class="fa-solid fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
 
                     <!-- Adım 2: Tarih ve Saat Seçimi -->
-                    <div class="booking-section-title" style="margin-top: 2rem;">
-                        <i class="fa-solid fa-calendar-days"></i>
-                        <h3>2. Tarih ve Saat Seçin</h3>
-                    </div>
+                    <div class="wizard-step" id="step-2">
+                        <div class="booking-section-title">
+                            <i class="fa-solid fa-calendar-days"></i>
+                            <h3>Tarih ve Saat Seçin</h3>
+                        </div>
+                        <div class="form-group">
+                            <label for="booking-date">Randevu Tarihi *</label>
+                            <input type="date" id="booking-date" required>
+                        </div>
 
-                    <div class="form-group">
-                        <label for="booking-date">Randevu Tarihi *</label>
-                        <input type="date" id="booking-date" required>
-                    </div>
+                        <!-- Saat Dilimleri -->
+                        <div id="booking-slots-container" style="display: none; animation: fadeIn 0.3s ease-out;">
+                            <div class="slots-container-header">
+                                <label style="font-weight: 600; font-size: 0.9rem; color: var(--text-secondary);">Uygun Randevu Saatleri *</label>
+                                <div class="slots-status-desc">
+                                    <div class="status-indicator">
+                                        <div class="status-dot empty"></div>
+                                        <span>Boş</span>
+                                    </div>
+                                    <div class="status-indicator">
+                                        <div class="status-dot full"></div>
+                                        <span>Dolu</span>
+                                    </div>
+                                    <div class="status-indicator">
+                                        <div class="status-dot selected"></div>
+                                        <span>Seçili</span>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <!-- Saat Dilimleri -->
-                    <div id="booking-slots-container" style="display: none; animation: fadeIn 0.3s ease-out;">
-                        <div class="slots-container-header">
-                            <label style="font-weight: 600; font-size: 0.9rem; color: var(--text-secondary);">Uygun Randevu Saatleri *</label>
-                            <div class="slots-status-desc">
-                                <div class="status-indicator">
-                                    <div class="status-dot empty"></div>
-                                    <span>Boş</span>
-                                </div>
-                                <div class="status-indicator">
-                                    <div class="status-dot full"></div>
-                                    <span>Dolu</span>
-                                </div>
-                                <div class="status-indicator">
-                                    <div class="status-dot selected"></div>
-                                    <span>Seçili</span>
-                                </div>
+                            <div class="slots-grid" id="booking-slots-grid">
+                                <!-- JS ile dinamik olarak doldurulacak -->
                             </div>
                         </div>
 
-                        <div class="slots-grid" id="booking-slots-grid">
-                            <!-- JS ile dinamik olarak doldurulacak -->
+                        <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; gap: 1rem;">
+                            <button type="button" class="btn-secondary" id="btn-back-to-1" style="flex: 1; padding: 0.75rem;">
+                                <i class="fa-solid fa-arrow-left"></i> Geri Dön
+                            </button>
+                            <button type="button" class="btn-primary" id="btn-next-to-3" disabled style="flex: 1; padding: 0.75rem; box-shadow: none;">
+                                Devam Et <i class="fa-solid fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Adım 3: İletişim Bilgileri -->
-                    <div class="booking-section-title" style="margin-top: 2rem;">
-                        <i class="fa-solid fa-address-card"></i>
-                        <h3>3. İletişim Bilgileriniz</h3>
-                    </div>
+                    <!-- Adım 3: İletişim Bilgileriniz -->
+                    <div class="wizard-step" id="step-3">
+                        <div class="booking-section-title">
+                            <i class="fa-solid fa-address-card"></i>
+                            <h3>İletişim Bilgileriniz</h3>
+                        </div>
 
-                    <div class="form-group">
-                        <label for="customer-name">Adınız Soyadınız *</label>
-                        <input type="text" id="customer-name" placeholder="Ahmet Yılmaz" required>
-                    </div>
+                        <div class="form-group">
+                            <label for="customer-name">Adınız Soyadınız *</label>
+                            <input type="text" id="customer-name" placeholder="Ahmet Yılmaz" required>
+                        </div>
 
-                    <div class="form-group">
-                        <label for="customer-phone">Telefon Numaranız *</label>
-                        <input type="tel" id="customer-phone" placeholder="0555 123 4567" required>
-                    </div>
+                        <div class="form-group">
+                            <label for="customer-phone">Telefon Numaranız *</label>
+                            <input type="tel" id="customer-phone" placeholder="0555 123 4567" required>
+                        </div>
 
-                    <div class="form-group">
-                        <label for="customer-notes">Eklemek İstediğiniz Not</label>
-                        <textarea id="customer-notes" placeholder="Varsa özel istekleriniz... (Örn: Saç yıkama dahil olsun)"></textarea>
-                    </div>
+                        <div class="form-group">
+                            <label for="customer-notes">Eklemek İstediğiniz Not</label>
+                            <textarea id="customer-notes" placeholder="Varsa özel istekleriniz... (Örn: Saç yıkama dahil olsun)"></textarea>
+                        </div>
 
-                    <button type="submit" class="btn-primary" id="btn-book" disabled style="margin-top: 1rem;">
-                        <i class="fa-solid fa-calendar-check"></i> Randevuyu Tamamla
-                    </button>
+                        <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; gap: 1rem;">
+                            <button type="button" class="btn-secondary" id="btn-back-to-2" style="flex: 1; padding: 0.75rem;">
+                                <i class="fa-solid fa-arrow-left"></i> Geri Dön
+                            </button>
+                            <button type="submit" class="btn-primary" id="btn-book" disabled style="flex: 1; padding: 0.75rem; box-shadow: 0 8px 20px var(--accent-gold-glow);">
+                                <i class="fa-solid fa-calendar-check"></i> Randevuyu Tamamla
+                            </button>
+                        </div>
+                    </div>
                 </form>
-            </div>
+            </div><!-- /.booking-card -->
 
             <!-- Footer -->
             <div class="salon-footer">
                 <p>© 2026 Saloon Gold. Tüm Hakları Saklıdır.</p>
                 <a href="admin.html" class="btn-admin-link">Yönetici Girişi</a>
             </div>
-        </div>
+        </div><!-- /.container -->
     </section>
 
     <!-- 2. REZERVASYON BAŞARILI EKRANI -->
@@ -195,6 +234,57 @@
             </div>
             <div class="modal-body" id="my-appointments-list">
                 <!-- Randevular buraya listelenecek -->
+            </div>
+        </div>
+    </div>
+
+    <!-- RANDEVU ONAY MODALİ -->
+    <div id="confirm-booking-modal" class="modal-backdrop">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-circle-question"></i> Randevu Detaylarını Onaylayın</h3>
+                <button type="button" class="btn-close-modal" id="btn-close-confirm-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem; text-align: center;">
+                    Lütfen seçtiğiniz randevu detaylarını kontrol edin. Onayladıktan sonra randevu talebiniz oluşturulacaktır.
+                </p>
+                
+                <div class="success-details" style="margin: 0 0 1.5rem 0; width: 100%; max-width: none;">
+                    <div class="success-detail-row">
+                        <span class="success-label">Hizmet:</span>
+                        <span class="success-val" id="confirm-service">-</span>
+                    </div>
+                    <div class="success-detail-row">
+                        <span class="success-label">Süre / Fiyat:</span>
+                        <span class="success-val" id="confirm-duration-price">-</span>
+                    </div>
+                    <div class="success-detail-row">
+                        <span class="success-label">Tarih:</span>
+                        <span class="success-val" id="confirm-date">-</span>
+                    </div>
+                    <div class="success-detail-row">
+                        <span class="success-label">Saat:</span>
+                        <span class="success-val" id="confirm-time">-</span>
+                    </div>
+                    <div class="success-detail-row" style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem; margin-top: 0.75rem;">
+                        <span class="success-label">Müşteri:</span>
+                        <span class="success-val" id="confirm-name">-</span>
+                    </div>
+                    <div class="success-detail-row">
+                        <span class="success-label">Telefon:</span>
+                        <span class="success-val" id="confirm-phone">-</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem;">
+                    <button type="button" class="btn-secondary" id="btn-cancel-confirm" style="flex: 1; padding: 0.9rem;">
+                        Vazgeç
+                    </button>
+                    <button type="button" class="btn-primary" id="btn-final-confirm" style="flex: 1; padding: 0.9rem; box-shadow: none;">
+                        Onayla ve Tamamla
+                    </button>
+                </div>
             </div>
         </div>
     </div>
