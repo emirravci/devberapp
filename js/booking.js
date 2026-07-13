@@ -458,24 +458,17 @@ function renderTimeSlots(activeSlots, bookedAppointments, dateString, slotStrate
             }
         }
 
-        let isBooked = false;
+        const slotStart = timeToMinutes(slot);
+        const slotEnd = slotStart + selectedDuration;
 
-        if (slotStrategy === 'service_based') {
-            const slotStart = timeToMinutes(slot);
-            const slotEnd = slotStart + selectedDuration;
+        let isBooked = bookedAppointments.some(app => {
+            const appStart = timeToMinutes(app.appointment_time);
+            const appDur = app.service_duration || 30; // fallback to 30 mins
+            const appEnd = appStart + appDur;
 
-            isBooked = bookedAppointments.some(app => {
-                const appStart = timeToMinutes(app.appointment_time);
-                const appDur = app.service_duration || 30; // fallback to 30 mins
-                const appEnd = appStart + appDur;
-
-                // Overlap check
-                return (slotStart < appEnd && slotEnd > appStart);
-            });
-        } else {
-            const formattedSlot = formatTime(slot);
-            isBooked = bookedAppointments.some(app => formatTime(app.appointment_time) === formattedSlot);
-        }
+            // Overlap check
+            return (slotStart < appEnd && slotEnd > appStart);
+        });
 
         if (isBooked || isPastTime || isBreak) {
             btn.disabled = true;
