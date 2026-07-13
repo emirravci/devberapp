@@ -435,6 +435,11 @@ input[type="date"] {
     background-color: var(--accent-gold);
 }
 
+.status-dot.pending {
+    background-color: hsl(35, 90%, 60%);
+    border: 1px solid hsl(35, 90%, 50%);
+}
+
 .slots-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -476,6 +481,32 @@ input[type="date"] {
     opacity: 0.45;
     position: relative;
     text-decoration: line-through;
+}
+
+/* Pending (onay bekliyor) slot — turuncu, tıklanamaz */
+.slot-btn.pending-slot {
+    background-color: hsl(35, 95%, 93%);
+    border-color: hsl(35, 90%, 60%);
+    color: hsl(30, 75%, 35%);
+    cursor: not-allowed;
+    opacity: 0.9;
+    position: relative;
+    text-decoration: none;
+    font-size: 0.78rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.65rem 0.5rem;
+    line-height: 1.2;
+}
+
+.slot-btn.pending-slot::after {
+    content: "⏳ Bekliyor";
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: hsl(30, 75%, 40%);
+    letter-spacing: 0.3px;
 }
 
 /* Action Buttons */

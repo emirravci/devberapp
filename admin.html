@@ -198,18 +198,19 @@
                         </button>
                     </div>
                 </div>
-                <div class="scheduler-slots-editor">
-                    <div class="add-slot-form">
-                        <input type="time" id="new-slot-time">
-                        <button class="btn-primary" id="btn-add-slot">
-                            <i class="fa-solid fa-plus"></i> Saat Ekle
+                <div class="holiday-config-card" style="margin-top: 1.5rem;">
+                    <h3><i class="fa-solid fa-clock"></i> Mesai Saatleri</h3>
+                    <p>Salonun açılış ve kapanış saatlerini belirleyin.</p>
+                    <div class="holiday-config-row" style="display: flex; gap: 1rem; align-items: center;">
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex: 1;">
+                            <input type="time" id="select-work-start" style="padding: 0.75rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); background-color: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: 1rem; width: 100%;">
+                            <span style="color: var(--text-secondary); font-weight: bold;">-</span>
+                            <input type="time" id="select-work-end" style="padding: 0.75rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); background-color: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: 1rem; width: 100%;">
+                        </div>
+                        <button class="btn-primary" id="btn-save-work-hours" style="width: auto;">
+                            <i class="fa-solid fa-floppy-disk"></i> Kaydet
                         </button>
                     </div>
-                    <div class="slots-section-header">
-                        <h3>Aktif Saat Dilimleri</h3>
-                        <span class="slots-count-badge" id="slots-count">0 saat</span>
-                    </div>
-                    <div class="slots-edit-grid" id="slots-edit-grid"></div>
                 </div>
             </div>
 

@@ -114,7 +114,7 @@ on customer_notes for all to authenticated using (true) with check (true);
 -- 6. Varsayılan Çalışma Saatlerinin Eklenmesi (İlk Kurulum)
 insert into settings (key, value) values (
     'working_slots', 
-    '["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]'::jsonb
+    '{"start": "09:00", "end": "22:00"}'::jsonb
 ) on conflict (key) do nothing;
 
 insert into settings (key, value) values (

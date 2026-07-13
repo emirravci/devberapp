@@ -46,10 +46,9 @@ const adminServicesPanel = document.getElementById('admin-services-panel');
 const adminCustomersPanel = document.getElementById('admin-customers-panel');
 
 // DOM Elements — Scheduler
-const newSlotTimeInput = document.getElementById('new-slot-time');
-const btnAddSlot = document.getElementById('btn-add-slot');
-const slotsEditGrid = document.getElementById('slots-edit-grid');
-const slotsCountBadge = document.getElementById('slots-count');
+const selectWorkStart = document.getElementById('select-work-start');
+const selectWorkEnd = document.getElementById('select-work-end');
+const btnSaveWorkHours = document.getElementById('btn-save-work-hours');
 const selectHolidayDay = document.getElementById('select-holiday-day');
 const btnSaveHoliday = document.getElementById('btn-save-holiday');
 const selectSlotStrategy = document.getElementById('select-slot-strategy');
@@ -98,7 +97,7 @@ const serviceModalTitle = document.getElementById('service-modal-title');
 // Module state
 let allAppointments = [];
 let currentFilter = 'all';
-let workingSlots = [];
+let workingHours = null;
 let weeklyHoliday = 'none';
 let servicesListArray = [];
 let realtimeChannel = null;
@@ -260,7 +259,7 @@ function initEvents() {
     });
 
     // Scheduler events
-    btnAddSlot.addEventListener('click', handleAddSlot);
+    if (btnSaveWorkHours) btnSaveWorkHours.addEventListener('click', handleSaveWorkHours);
     btnSaveHoliday.addEventListener('click', handleSaveHoliday);
     btnSaveStrategy.addEventListener('click', handleSaveStrategy);
 
@@ -528,73 +527,40 @@ async function loadWorkingHours() {
             .maybeSingle();
 
         if (error) throw error;
-        workingSlots = (data && data.value) ? data.value : [];
-        renderWorkingSlots();
+        
+        workingHours = (data && data.value && typeof data.value === 'object' && !Array.isArray(data.value)) 
+            ? data.value 
+            : { start: '09:00', end: '22:00' };
+
+        if (selectWorkStart) selectWorkStart.value = workingHours.start || '09:00';
+        if (selectWorkEnd) selectWorkEnd.value = workingHours.end || '22:00';
     } catch (err) {
-        console.error("Saat dilimleri yüklenemedi:", err);
+        console.error("Çalışma saatleri yüklenemedi:", err);
         showToast("Çalışma saatleri yüklenirken hata oluştu.", "error");
     } finally {
         hideLoader();
     }
 }
 
-function renderWorkingSlots() {
-    slotsEditGrid.innerHTML = '';
-    slotsCountBadge.innerText = `${workingSlots.length} saat`;
+async function handleSaveWorkHours() {
+    const start = selectWorkStart.value;
+    const end = selectWorkEnd.value;
 
-    if (workingSlots.length === 0) {
-        slotsEditGrid.innerHTML = `
-            <div style="grid-column: 1 / -1; color: var(--text-secondary); font-size: 0.95rem; font-style: italic;">
-                Kayıtlı saat dilimi bulunmamaktadır. Lütfen saat ekleyin.
-            </div>
-        `;
+    if (!start || !end) {
+        showToast("Lütfen başlangıç ve bitiş saatini seçin.", "error");
         return;
     }
 
-    workingSlots.forEach(time => {
-        const badge = document.createElement('div');
-        badge.className = 'slot-edit-badge';
-        badge.innerHTML = `
-            <span>${time}</span>
-            <button class="btn-remove-slot" data-time="${time}" title="Kaldır"><i class="fa-solid fa-xmark"></i></button>
-        `;
-        badge.querySelector('.btn-remove-slot').addEventListener('click', () => removeWorkingSlot(time));
-        slotsEditGrid.appendChild(badge);
-    });
-}
-
-async function handleAddSlot() {
-    const newTime = newSlotTimeInput.value;
-    if (!newTime) {
-        showToast("Lütfen geçerli bir saat seçin.", "error");
-        return;
-    }
-    if (workingSlots.includes(newTime)) {
-        showToast("Bu saat dilimi zaten mevcut.", "error");
-        return;
-    }
-    workingSlots.push(newTime);
-    workingSlots.sort();
-    await saveWorkingSlots();
-    newSlotTimeInput.value = '';
-}
-
-async function removeWorkingSlot(timeToRemove) {
-    if (!confirm(`${timeToRemove} saat dilimini kaldırmak istediğinize emin misiniz?`)) return;
-    workingSlots = workingSlots.filter(t => t !== timeToRemove);
-    await saveWorkingSlots();
-}
-
-async function saveWorkingSlots() {
     showLoader();
     try {
+        const payload = { start, end };
         const { error } = await supabase
             .from('settings')
-            .upsert({ key: 'working_slots', value: workingSlots, updated_at: new Date().toISOString() });
+            .upsert({ key: 'working_slots', value: payload, updated_at: new Date().toISOString() }, { onConflict: 'key' });
 
         if (error) throw error;
-        showToast("Çalışma saatleri güncellendi.", "success");
-        renderWorkingSlots();
+        workingHours = payload;
+        showToast("Mesai saatleri başarıyla güncellendi.", "success");
     } catch (err) {
         console.error("Saatler veritabanına kaydedilemedi:", err);
         showToast("Değişiklikler kaydedilirken hata oluştu.", "error");

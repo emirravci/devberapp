@@ -347,11 +347,31 @@ async function loadAvailableTimeSlots(dateString) {
         const strategySetting = settingsData.find(s => s.key === 'slot_strategy');
         const breakSetting = settingsData.find(s => s.key === 'break_hours');
 
-        const activeSlots = workingSlotsSetting ? workingSlotsSetting.value : [
-            "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"
-        ];
+        let workingHours = { start: '09:00', end: '22:00' };
+        if (workingSlotsSetting && workingSlotsSetting.value) {
+            if (Array.isArray(workingSlotsSetting.value) && workingSlotsSetting.value.length > 0) {
+                const sorted = [...workingSlotsSetting.value].sort();
+                workingHours.start = sorted[0];
+                workingHours.end = sorted[sorted.length - 1];
+            } else if (!Array.isArray(workingSlotsSetting.value)) {
+                workingHours = workingSlotsSetting.value;
+            }
+        }
+
+        const startMin = timeToMinutes(workingHours.start || '09:00');
+        const endMin = timeToMinutes(workingHours.end || '22:00');
+        
+        let activeSlots = [];
+        for (let m = startMin; m <= endMin; m += 30) {
+            activeSlots.push(minutesToTime(m));
+        }
         const holidayDay = holidaySetting ? holidaySetting.value : 'none';
-        const slotStrategy = strategySetting ? strategySetting.value : 'half_hourly';
+        let slotStrategy = strategySetting ? strategySetting.value : 'half_hourly';
+        if (typeof slotStrategy === 'string') {
+            slotStrategy = slotStrategy.replace(/^"|"$/g, '');
+        } else if (typeof slotStrategy === 'object' && slotStrategy !== null) {
+            slotStrategy = slotStrategy.strategy || slotStrategy.value || 'half_hourly';
+        }
         const breakHours = breakSetting ? breakSetting.value : null;
 
         // Check holiday
@@ -365,10 +385,10 @@ async function loadAvailableTimeSlots(dateString) {
             }
         }
 
-        // Fetch booked times and their durations
+        // Fetch booked times, their durations and statuses
         const { data: bookedData, error: bookedError } = await supabase
             .from('appointments')
-            .select('appointment_time, service_duration')
+            .select('appointment_time, service_duration, status')
             .eq('appointment_date', dateString)
             .neq('status', 'rejected');
 
@@ -461,18 +481,30 @@ function renderTimeSlots(activeSlots, bookedAppointments, dateString, slotStrate
         const slotStart = timeToMinutes(slot);
         const slotEnd = slotStart + selectedDuration;
 
-        let isBooked = bookedAppointments.some(app => {
+        let isBooked = false;
+        let isPending = false;
+
+        bookedAppointments.forEach(app => {
             const appStart = timeToMinutes(app.appointment_time);
-            const appDur = app.service_duration || 30; // fallback to 30 mins
+            const appDur = app.service_duration || 30;
             const appEnd = appStart + appDur;
 
-            // Overlap check
-            return (slotStart < appEnd && slotEnd > appStart);
+            if (slotStart < appEnd && slotEnd > appStart) {
+                if (app.status === 'approved') {
+                    isBooked = true;
+                } else if (app.status === 'pending') {
+                    isPending = true;
+                }
+            }
         });
 
         if (isBooked || isPastTime || isBreak) {
             btn.disabled = true;
             btn.title = isBooked ? "Dolu" : (isBreak ? "Mola / Yemek Saati" : "Geçmiş Saat");
+        } else if (isPending) {
+            btn.disabled = true;
+            btn.classList.add('pending-slot');
+            btn.title = "Bu saat için onay bekleyen bir randevu var";
         }
 
         btn.addEventListener('click', () => {
@@ -714,11 +746,21 @@ async function updateSalonStatusBadge() {
         const workingSlotsSetting = settingsData.find(s => s.key === 'working_slots');
         const holidaySetting = settingsData.find(s => s.key === 'weekly_holiday');
 
-        const activeSlots = workingSlotsSetting ? workingSlotsSetting.value : [];
+        let workingHours = { start: '09:00', end: '22:00' };
+        if (workingSlotsSetting && workingSlotsSetting.value) {
+            if (Array.isArray(workingSlotsSetting.value) && workingSlotsSetting.value.length > 0) {
+                const sorted = [...workingSlotsSetting.value].sort();
+                workingHours.start = sorted[0];
+                workingHours.end = sorted[sorted.length - 1];
+            } else if (!Array.isArray(workingSlotsSetting.value)) {
+                workingHours = workingSlotsSetting.value;
+            }
+        }
+        
         const holidayDay = holidaySetting ? holidaySetting.value : 'none';
 
         const now = new Date();
-        const currentDayNum = now.getDay(); // 0: Pazar, 1: Pazartesi...
+        const currentDayNum = now.getDay();
         
         // Check if holiday
         if (holidayDay !== 'none' && currentDayNum.toString() === holidayDay) {
@@ -727,25 +769,17 @@ async function updateSalonStatusBadge() {
             return;
         }
 
-        if (activeSlots.length === 0) {
+        if (!workingHours || !workingHours.start || !workingHours.end) {
             statusBadge.innerText = "Salon: Kapalı";
             statusBadge.className = "salon-status-badge status-closed";
             return;
         }
 
-        // Sort slots to get start/end time
-        const sortedSlots = [...activeSlots].sort();
-        const firstSlot = sortedSlots[0];
-        const lastSlot = sortedSlots[sortedSlots.length - 1];
-
         const currentHour = now.getHours();
         const currentMin = now.getMinutes();
 
-        const [startHour, startMin] = firstSlot.split(':').map(Number);
-        const [endHour, endMin] = lastSlot.split(':').map(Number);
-
-        const startTimeVal = startHour * 60 + startMin;
-        const endTimeVal = (endHour + 1) * 60; // 1 hour after the last slot starts
+        const startTimeVal = timeToMinutes(workingHours.start);
+        const endTimeVal = timeToMinutes(workingHours.end);
         const currentTimeVal = currentHour * 60 + currentMin;
 
         if (currentTimeVal >= startTimeVal && currentTimeVal < endTimeVal) {
