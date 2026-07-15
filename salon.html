@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saloon Gold | Berber Randevu Sistemi</title>
+    <title>Saloon Gold | Berber Randevu Platformu</title>
     <meta name="robots" content="noindex, nofollow">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,20 +20,49 @@
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toast-container"></div>
 
-    <!-- 1. MÜŞTERİ REZERVASYON EKRANI -->
-    <section id="booking-view" class="view-section active">
+    <!-- SALON STICKY APP BAR -->
+    <header class="platform-appbar">
+        <div class="platform-appbar-container">
+            <span class="platform-logo">
+                <i class="fa-solid fa-scissors"></i>
+                <span id="appbar-salon-name">Salon Yükleniyor...</span>
+            </span>
+            <div class="platform-nav">
+                <button type="button" class="btn-secondary btn-sm" id="btn-my-appointments-nav">
+                    <i class="fa-solid fa-clock-rotate-left"></i> <span class="nav-btn-text">Randevularım</span>
+                </button>
+            </div>
+        </div>
+    </header>
 
-        <!-- Hero Section — Full Width -->
-        <div class="salon-hero">
-            <div class="hero-bg-pattern" aria-hidden="true"></div>
-            <div class="hero-content">
-                <div class="hero-logo-icon">
-                    <i class="fa-solid fa-scissors"></i>
+    <!-- 1. MÜŞTERİ REZERVASYON EKRANI -->
+    <section id="booking-view" class="view-section active" style="padding-top: 64px;">
+
+        <!-- SALON PROFIL BÖLÜMÜ -->
+        <div class="salon-profile-header">
+            <div class="salon-cover-wrapper">
+                <img id="salon-cover-img" src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1200&auto=format&fit=crop&q=80" alt="Salon Kapak">
+                <div class="salon-cover-overlay"></div>
+            </div>
+            
+            <div class="salon-profile-details">
+                <div class="salon-avatar-wrapper">
+                    <img id="salon-logo-img" src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=150&auto=format&fit=crop&q=80" alt="Logo">
                 </div>
-                <span class="salon-badge">Premium Hizmet</span>
-                <h1 class="salon-title">DEVBER</h1>
-                <p class="salon-tagline">Tarzınızı yansıtan profesyonel dokunuşlar</p>
-                <div class="hero-actions">
+                
+                <div class="salon-info-text">
+                    <h1 id="display-salon-name" class="salon-title">Salon Yükleniyor...</h1>
+                    <p id="display-salon-description" class="salon-desc">Lütfen bekleyin, profil bilgileri yükleniyor.</p>
+                    
+                    <div class="salon-contact-meta">
+                        <a id="display-salon-phone" href="#"><i class="fa-solid fa-phone"></i> Yükleniyor...</a>
+                        <a id="display-salon-address" href="#" target="_blank"><i class="fa-solid fa-location-dot"></i> Yükleniyor...</a>
+                        <a id="display-salon-whatsapp" href="#" target="_blank" style="display: none;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                        <a id="display-salon-instagram" href="#" target="_blank" style="display: none;"><i class="fa-brands fa-instagram"></i> Instagram</a>
+                    </div>
+                </div>
+
+                <div class="salon-profile-actions">
                     <span id="salon-status-badge" class="salon-status-badge status-loading">
                         <span class="status-pulse"></span> Yükleniyor...
                     </span>
@@ -42,16 +71,19 @@
                     </button>
                 </div>
             </div>
-            <div class="hero-divider">
-                <svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0,60 C300,0 900,60 1200,0 L1200,60 Z" fill="var(--bg-main)"/>
-                </svg>
-            </div>
         </div>
 
         <!-- Booking Form Container -->
         <div class="container">
-            <div class="booking-card">
+            <!-- Berber Seçilmediyse Hata Mesajı -->
+            <div id="no-barber-error" class="success-card" style="display: none; border-color: var(--color-error);">
+                <div class="success-icon" style="color: var(--color-error);"><i class="fa-solid fa-circle-exclamation"></i></div>
+                <h2>Berber Bulunamadı</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Geçersiz veya eksik berber ID'si. Lütfen doğru linki kullandığınızdan emin olun.</p>
+                <a href="index.html" class="btn-primary" style="display: inline-flex; width: auto;">Ana Sayfaya Git</a>
+            </div>
+
+            <div class="booking-card" id="main-booking-card">
                 
                 <!-- Sihirbaz İlerleme Adımları (Progress Bar) -->
                 <div class="wizard-progress" id="wizard-progress">
@@ -81,7 +113,6 @@
                             <h3>Hizmet Seçin</h3>
                         </div>
                         <div class="services-grid" id="services-grid">
-                            <!-- JS ile dinamik olarak doldurulacaktır -->
                             <div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 2rem 0;">
                                 <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.5rem; color: var(--accent-gold); margin-bottom: 0.5rem; display: block;"></i>
                                 Hizmetler yükleniyor...
@@ -129,9 +160,7 @@
                                 </div>
                             </div>
 
-                            <div class="slots-grid" id="booking-slots-grid">
-                                <!-- JS ile dinamik olarak doldurulacak -->
-                            </div>
+                            <div class="slots-grid" id="booking-slots-grid"></div>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; gap: 1rem;">
@@ -163,7 +192,7 @@
 
                         <div class="form-group">
                             <label for="customer-notes">Eklemek İstediğiniz Not</label>
-                            <textarea id="customer-notes" placeholder="Varsa özel istekleriniz... (Örn: Saç yıkama dahil olsun)"></textarea>
+                            <textarea id="customer-notes" placeholder="Varsa özel istekleriniz..."></textarea>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; gap: 1rem;">
@@ -176,14 +205,8 @@
                         </div>
                     </div>
                 </form>
-            </div><!-- /.booking-card -->
-
-            <!-- Footer -->
-            <div class="salon-footer">
-                <p>© 2026 DEVBER. Tüm Hakları Saklıdır.</p>
-                <a href="admin.html" class="btn-admin-link">Yönetici Girişi</a>
             </div>
-        </div><!-- /.container -->
+        </div>
     </section>
 
     <!-- 2. REZERVASYON BAŞARILI EKRANI -->
@@ -236,9 +259,7 @@
                 <h3><i class="fa-solid fa-clock-rotate-left"></i> Randevularım</h3>
                 <button class="btn-close-modal" id="btn-close-appointments-modal"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="modal-body" id="my-appointments-list">
-                <!-- Randevular buraya listelenecek -->
-            </div>
+            <div class="modal-body" id="my-appointments-list"></div>
         </div>
     </div>
 
@@ -295,7 +316,6 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Müşteri Script Modülü -->
     <script src="js/supabase-core.js" type="module"></script>
     <script src="js/booking.js" type="module"></script>
 </body>

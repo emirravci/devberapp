@@ -117,6 +117,9 @@
                 <button class="admin-tab-btn" id="tab-musteriler">
                     <i class="fa-solid fa-users"></i> Müşteriler
                 </button>
+                <button class="admin-tab-btn" id="tab-profil">
+                    <i class="fa-solid fa-store"></i> Salon Profilim
+                </button>
             </div>
 
             <!-- Panel 1: Randevular -->
@@ -265,6 +268,155 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <!-- Panel 5: Salon Profilim -->
+            <div id="admin-profile-panel" class="scheduler-panel" style="display:none;">
+                <div class="scheduler-desc">
+                    <h2><i class="fa-solid fa-store"></i> Salon Profili Düzenle</h2>
+                    <p>Müşterilerinizin randevu alırken göreceği salon bilgilerini, sosyal medya linklerini ve logoyu buradan güncelleyebilirsiniz.</p>
+                </div>
+                
+                <div class="holiday-config-card" style="margin-bottom: 1.5rem;">
+                    <h3><i class="fa-solid fa-share-nodes"></i> Paylaşım Linkiniz</h3>
+                    <p>Müşterileriniz bu link üzerinden randevu alabilir. Aşağıdan özel URL adınızı belirleyebilirsiniz.</p>
+                    <div style="display:flex; gap: 0.5rem; margin-top: 1rem; align-items: center;">
+                        <input type="text" id="salon-share-url" readonly style="flex:1; padding:0.75rem; border: 1px solid var(--border-color); border-radius: var(--border-radius); background: var(--bg-input); font-family: monospace; font-size: 0.85rem;" value="">
+                        <button type="button" class="btn-primary" id="btn-copy-share-url" style="width:auto; padding: 0.75rem 1.5rem;">
+                            <i class="fa-regular fa-copy"></i> Kopyala
+                        </button>
+                    </div>
+                </div>
+
+                <form id="profile-form">
+                    <div class="holiday-config-card">
+                        <h3><i class="fa-solid fa-circle-info"></i> Temel Bilgiler</h3>
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label for="profile-salon-name">Salon Adı *</label>
+                            <input type="text" id="profile-salon-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-slug">
+                                <i class="fa-solid fa-link" style="color: var(--accent-gold);"></i>
+                                Özel URL Adı <span style="color: var(--text-muted); font-weight: 400;">(sadece harf, rakam ve tire)</span>
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 0;
+                                        border: 1px solid var(--border-color); border-radius: var(--border-radius);
+                                        overflow: hidden; background: var(--bg-input);">
+                                <span style="padding: 0.75rem 0.85rem; background: var(--bg-hover); color: var(--text-muted); font-size: 0.82rem; white-space: nowrap; border-right: 1px solid var(--border-color); font-family: monospace;">salon.html?s=</span>
+                                <input type="text" id="profile-slug"
+                                    placeholder="gumus-berber"
+                                    pattern="[a-z0-9\-]+"
+                                    style="border: none; border-radius: 0; background: transparent; flex: 1; font-family: monospace;">
+                                <span id="slug-status-icon" style="padding: 0 0.75rem; font-size: 1rem;"></span>
+                            </div>
+                            <small style="color: var(--text-muted); margin-top: 0.35rem; display: block;">
+                                Küçük harf, rakam ve tire kullanabilirsiniz. Örn: <code>gumus-berber</code>
+                            </small>
+                        </div>
+                        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label for="profile-owner-name">Sahip / Baş Berber Adı</label>
+                                <input type="text" id="profile-owner-name">
+                            </div>
+                            <div>
+                                <label for="profile-phone">Telefon Numarası</label>
+                                <input type="tel" id="profile-phone" placeholder="0555 123 4567">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-address">Adres</label>
+                            <input type="text" id="profile-address">
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-desc">Salon Açıklaması (Müşterilere Gösterilir)</label>
+                            <textarea id="profile-desc" style="min-height: 80px;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-instagram">Instagram Kullanıcı Adı (Örn: saloon_gold)</label>
+                            <input type="text" id="profile-instagram" placeholder="saloon_gold">
+                        </div>
+                    </div>
+
+                    <div class="holiday-config-card" style="margin-top: 1.5rem;">
+                        <h3><i class="fa-solid fa-image"></i> Logo & Kapak Görselleri</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0.5rem 0 1.25rem;">Cihazınızdan direkt yükleyebilir veya internet adresi girebilirsiniz.</p>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+                            <!-- LOGO UPLOAD -->
+                            <div>
+                                <label style="font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.75rem;">
+                                    <i class="fa-solid fa-circle-user"></i> Salon Logosu
+                                </label>
+                                <div class="image-upload-card" id="logo-upload-card">
+                                    <div class="image-preview-wrapper" id="logo-preview-wrapper">
+                                        <img id="logo-preview-img" src="" alt="Logo" style="display:none; width:100%; height:100%; object-fit:cover; border-radius: 8px;">
+                                        <div class="image-upload-placeholder" id="logo-placeholder">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                                            <span>Yüklemek için tıkla</span>
+                                            <small>Kare (1:1) — Örn: 500x500px</small>
+                                            <small>PNG, JPG — Max 2MB</small>
+                                        </div>
+                                    </div>
+                                    <input type="file" id="logo-file-input" accept="image/*" style="display:none;">
+                                    <div class="image-upload-actions">
+                                        <button type="button" class="btn-secondary btn-sm" id="btn-pick-logo">
+                                            <i class="fa-solid fa-folder-open"></i> Dosya Seç
+                                        </button>
+                                        <button type="button" class="btn-ghost btn-sm" id="btn-remove-logo" style="display:none; color: var(--color-error);">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="upload-progress" id="logo-upload-progress" style="display:none;">
+                                        <div class="upload-progress-bar" id="logo-progress-bar"></div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 0.5rem;">
+                                    <input type="url" id="profile-logo-url" placeholder="ya da URL gir: https://..." style="font-size:0.8rem; padding: 0.5rem 0.75rem;">
+                                </div>
+                            </div>
+
+                            <!-- COVER UPLOAD -->
+                            <div>
+                                <label style="font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.75rem;">
+                                    <i class="fa-solid fa-panorama"></i> Kapak Görseli
+                                </label>
+                                <div class="image-upload-card" id="cover-upload-card">
+                                    <div class="image-preview-wrapper" id="cover-preview-wrapper">
+                                        <img id="cover-preview-img" src="" alt="Kapak" style="display:none; width:100%; height:100%; object-fit:cover; border-radius: 8px;">
+                                        <div class="image-upload-placeholder" id="cover-placeholder">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                                            <span>Yüklemek için tıkla</span>
+                                            <small>Yatay (16:9 veya 3:1) — Örn: 1200x400px</small>
+                                            <small>PNG, JPG — Max 5MB</small>
+                                        </div>
+                                    </div>
+                                    <input type="file" id="cover-file-input" accept="image/*" style="display:none;">
+                                    <div class="image-upload-actions">
+                                        <button type="button" class="btn-secondary btn-sm" id="btn-pick-cover">
+                                            <i class="fa-solid fa-folder-open"></i> Dosya Seç
+                                        </button>
+                                        <button type="button" class="btn-ghost btn-sm" id="btn-remove-cover" style="display:none; color: var(--color-error);">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="upload-progress" id="cover-upload-progress" style="display:none;">
+                                        <div class="upload-progress-bar" id="cover-progress-bar"></div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 0.5rem;">
+                                    <input type="url" id="profile-cover-url" placeholder="ya da URL gir: https://..." style="font-size:0.8rem; padding: 0.5rem 0.75rem;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn-primary" style="width: auto; padding: 0.9rem 3rem;">
+                            <i class="fa-solid fa-floppy-disk"></i> Profili Kaydet
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </section>

@@ -94,6 +94,24 @@ const serviceIconInput = document.getElementById('service-icon-input');
 const serviceDescInput = document.getElementById('service-desc-input');
 const serviceModalTitle = document.getElementById('service-modal-title');
 
+// DOM Elements — Salon Profile
+const tabProfil = document.getElementById('tab-profil');
+const adminProfilePanel = document.getElementById('admin-profile-panel');
+const salonShareUrlInput = document.getElementById('salon-share-url');
+const btnCopyShareUrl = document.getElementById('btn-copy-share-url');
+const profileForm = document.getElementById('profile-form');
+const profileSalonName = document.getElementById('profile-salon-name');
+const profileOwnerName = document.getElementById('profile-owner-name');
+const profilePhone = document.getElementById('profile-phone');
+const profileAddress = document.getElementById('profile-address');
+const profileDesc = document.getElementById('profile-desc');
+const profileInstagram = document.getElementById('profile-instagram');
+const profileLogoUrl = document.getElementById('profile-logo-url');
+const profileCoverUrl = document.getElementById('profile-cover-url');
+const profileSlug = document.getElementById('profile-slug');
+const slugStatusIcon = document.getElementById('slug-status-icon');
+
+
 // Module state
 let allAppointments = [];
 let currentFilter = 'all';
@@ -101,6 +119,7 @@ let workingHours = null;
 let weeklyHoliday = 'none';
 let servicesListArray = [];
 let realtimeChannel = null;
+let sessionUserId = null;
 
 // =============================================
 // INITIALIZATION — Check session on page load
@@ -108,12 +127,13 @@ let realtimeChannel = null;
 async function initAdmin() {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
+        sessionUserId = session.user.id;
         showAdminView('admin-dashboard');
         document.getElementById('admin-username').innerText = session.user.email;
         await loadAdminDashboard();
         initRealtimeSubscription();
     } else {
-        showAdminView('admin-login');
+        window.location.href = 'auth.html';
     }
 }
 
@@ -121,20 +141,12 @@ async function initAdmin() {
 supabase.auth.onAuthStateChange((event, session) => {
     const adminUsername = document.getElementById('admin-username');
     if (session && session.user) {
+        sessionUserId = session.user.id;
         if (adminUsername) adminUsername.innerText = session.user.email;
-        if (adminLoginView.classList.contains('active')) {
-            showAdminView('admin-dashboard');
-            loadAdminDashboard();
-            initRealtimeSubscription();
-        }
     } else {
+        sessionUserId = null;
         if (adminUsername) adminUsername.innerText = '';
-        showAdminView('admin-login');
-        // Cleanup realtime
-        if (realtimeChannel) {
-            supabase.removeChannel(realtimeChannel);
-            realtimeChannel = null;
-        }
+        window.location.href = 'auth.html';
     }
 });
 
@@ -213,10 +225,12 @@ function initEvents() {
         tabCalismaSaatleri.classList.remove('active');
         tabHizmetler.classList.remove('active');
         tabMusteriler.classList.remove('active');
+        tabProfil.classList.remove('active');
         adminAppointmentsPanel.style.display = 'block';
         adminSchedulerPanel.style.display = 'none';
         adminServicesPanel.style.display = 'none';
         adminCustomersPanel.style.display = 'none';
+        adminProfilePanel.style.display = 'none';
     });
 
     tabCalismaSaatleri.addEventListener('click', async () => {
@@ -224,10 +238,12 @@ function initEvents() {
         tabRandevular.classList.remove('active');
         tabHizmetler.classList.remove('active');
         tabMusteriler.classList.remove('active');
+        tabProfil.classList.remove('active');
         adminSchedulerPanel.style.display = 'block';
         adminAppointmentsPanel.style.display = 'none';
         adminServicesPanel.style.display = 'none';
         adminCustomersPanel.style.display = 'none';
+        adminProfilePanel.style.display = 'none';
         await loadWorkingHours();
         await loadHolidaySetting();
         await loadStrategySetting();
@@ -239,10 +255,12 @@ function initEvents() {
         tabRandevular.classList.remove('active');
         tabCalismaSaatleri.classList.remove('active');
         tabMusteriler.classList.remove('active');
+        tabProfil.classList.remove('active');
         adminServicesPanel.style.display = 'block';
         adminAppointmentsPanel.style.display = 'none';
         adminSchedulerPanel.style.display = 'none';
         adminCustomersPanel.style.display = 'none';
+        adminProfilePanel.style.display = 'none';
         await loadAdminServices();
     });
 
@@ -251,11 +269,27 @@ function initEvents() {
         tabRandevular.classList.remove('active');
         tabCalismaSaatleri.classList.remove('active');
         tabHizmetler.classList.remove('active');
+        tabProfil.classList.remove('active');
         adminCustomersPanel.style.display = 'block';
         adminAppointmentsPanel.style.display = 'none';
         adminSchedulerPanel.style.display = 'none';
         adminServicesPanel.style.display = 'none';
+        adminProfilePanel.style.display = 'none';
         await loadCustomersList();
+    });
+
+    tabProfil.addEventListener('click', async () => {
+        tabProfil.classList.add('active');
+        tabRandevular.classList.remove('active');
+        tabCalismaSaatleri.classList.remove('active');
+        tabHizmetler.classList.remove('active');
+        tabMusteriler.classList.remove('active');
+        adminProfilePanel.style.display = 'block';
+        adminAppointmentsPanel.style.display = 'none';
+        adminSchedulerPanel.style.display = 'none';
+        adminServicesPanel.style.display = 'none';
+        adminCustomersPanel.style.display = 'none';
+        await loadBarberProfile();
     });
 
     // Scheduler events
@@ -282,6 +316,68 @@ function initEvents() {
     if (btnCloseNoteModal) btnCloseNoteModal.addEventListener('click', closeNoteModal);
     if (btnCancelNote) btnCancelNote.addEventListener('click', closeNoteModal);
     if (customerNoteForm) customerNoteForm.addEventListener('submit', handleCustomerNoteSubmit);
+
+    // Profile events
+    if (btnCopyShareUrl) btnCopyShareUrl.addEventListener('click', handleCopyShareUrl);
+    if (profileForm) profileForm.addEventListener('submit', handleProfileSubmit);
+
+    // Slug real-time uniqueness validation
+    let slugCheckTimeout = null;
+    if (profileSlug) {
+        profileSlug.addEventListener('input', (e) => {
+            // Clean value: force lowercase, digits, and hyphens only
+            let val = e.target.value.toLowerCase().replace(/[^a-z0-9\-]/g, '');
+            e.target.value = val;
+            
+            // Update live preview of share URL
+            updateLiveShareUrl(val);
+
+            if (slugCheckTimeout) clearTimeout(slugCheckTimeout);
+            if (!val) {
+                slugStatusIcon.innerHTML = '';
+                return;
+            }
+
+            slugStatusIcon.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color: var(--accent-gold);"></i>';
+            slugCheckTimeout = setTimeout(async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('barbers')
+                        .select('id')
+                        .eq('slug', val)
+                        .neq('id', sessionUserId)
+                        .maybeSingle();
+
+                    if (error) throw error;
+
+                    if (data) {
+                        slugStatusIcon.innerHTML = '<i class="fa-solid fa-circle-xmark" style="color: var(--color-error);" title="Bu URL adı başkası tarafından alınmış!"></i>';
+                    } else {
+                        slugStatusIcon.innerHTML = '<i class="fa-solid fa-circle-check" style="color: var(--color-success);" title="Bu URL adı uygun!"></i>';
+                    }
+                } catch (err) {
+                    console.error("Slug kontrol hatası:", err);
+                    slugStatusIcon.innerHTML = '';
+                }
+            }, 500);
+        });
+    }
+
+
+    // Image upload events
+    const btnPickLogo = document.getElementById('btn-pick-logo');
+    const btnPickCover = document.getElementById('btn-pick-cover');
+    const btnRemoveLogo = document.getElementById('btn-remove-logo');
+    const btnRemoveCover = document.getElementById('btn-remove-cover');
+    const logoFileInput = document.getElementById('logo-file-input');
+    const coverFileInput = document.getElementById('cover-file-input');
+
+    if (btnPickLogo) btnPickLogo.addEventListener('click', () => logoFileInput.click());
+    if (btnPickCover) btnPickCover.addEventListener('click', () => coverFileInput.click());
+    if (logoFileInput) logoFileInput.addEventListener('change', (e) => handleImageUpload(e, 'logo'));
+    if (coverFileInput) coverFileInput.addEventListener('change', (e) => handleImageUpload(e, 'cover'));
+    if (btnRemoveLogo) btnRemoveLogo.addEventListener('click', () => clearImagePreview('logo'));
+    if (btnRemoveCover) btnRemoveCover.addEventListener('click', () => clearImagePreview('cover'));
 }
 
 initEvents();
@@ -307,6 +403,7 @@ async function loadAdminDashboard() {
         const { data, error } = await supabase
             .from('appointments')
             .select('*')
+            .eq('user_id', sessionUserId)
             .order('appointment_date', { ascending: true })
             .order('appointment_time', { ascending: true });
 
@@ -523,6 +620,7 @@ async function loadWorkingHours() {
         const { data, error } = await supabase
             .from('settings')
             .select('value')
+            .eq('user_id', sessionUserId)
             .eq('key', 'working_slots')
             .maybeSingle();
 
@@ -556,7 +654,7 @@ async function handleSaveWorkHours() {
         const payload = { start, end };
         const { error } = await supabase
             .from('settings')
-            .upsert({ key: 'working_slots', value: payload, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+            .upsert({ user_id: sessionUserId, key: 'working_slots', value: payload, updated_at: new Date().toISOString() });
 
         if (error) throw error;
         workingHours = payload;
@@ -578,6 +676,7 @@ async function loadHolidaySetting() {
         const { data, error } = await supabase
             .from('settings')
             .select('value')
+            .eq('user_id', sessionUserId)
             .eq('key', 'weekly_holiday')
             .maybeSingle();
 
@@ -598,7 +697,7 @@ async function handleSaveHoliday() {
     try {
         const { error } = await supabase
             .from('settings')
-            .upsert({ key: 'weekly_holiday', value: selectedHoliday, updated_at: new Date().toISOString() });
+            .upsert({ user_id: sessionUserId, key: 'weekly_holiday', value: selectedHoliday, updated_at: new Date().toISOString() });
 
         if (error) throw error;
         weeklyHoliday = selectedHoliday;
@@ -634,6 +733,7 @@ async function loadAdminDashboardSilent() {
         const { data, error } = await supabase
             .from('appointments')
             .select('*')
+            .eq('user_id', sessionUserId)
             .order('appointment_date', { ascending: true })
             .order('appointment_time', { ascending: true });
 
@@ -655,6 +755,7 @@ async function loadAdminServices() {
         const { data, error } = await supabase
             .from('services')
             .select('*')
+            .eq('user_id', sessionUserId)
             .order('price', { ascending: true });
 
         if (error) throw error;
@@ -768,7 +869,7 @@ async function handleServiceFormSubmit(e) {
             // Insert
             const { error } = await supabase
                 .from('services')
-                .insert(payload);
+                .insert({ ...payload, user_id: sessionUserId });
 
             if (error) throw error;
             showToast("Yeni hizmet başarıyla eklendi.", "success");
@@ -813,8 +914,9 @@ async function loadStrategySetting() {
         const { data, error } = await supabase
             .from('settings')
             .select('value')
+            .eq('user_id', sessionUserId)
             .eq('key', 'slot_strategy')
-            .single();
+            .maybeSingle();
 
         if (error && error.code !== 'PGRST116') throw error;
 
@@ -835,7 +937,7 @@ async function handleSaveStrategy() {
     try {
         const { error } = await supabase
             .from('settings')
-            .upsert({ key: 'slot_strategy', value: strategy }, { onConflict: 'key' });
+            .upsert({ user_id: sessionUserId, key: 'slot_strategy', value: strategy });
 
         if (error) throw error;
         showToast("Randevu saat dağılım modu kaydedildi!", "success");
@@ -855,8 +957,9 @@ async function loadBreakHours() {
         const { data, error } = await supabase
             .from('settings')
             .select('value')
+            .eq('user_id', sessionUserId)
             .eq('key', 'break_hours')
-            .single();
+            .maybeSingle();
 
         if (error && error.code !== 'PGRST116') throw error;
         
@@ -878,7 +981,7 @@ async function handleSaveBreak() {
         const payload = { start, end };
         const { error } = await supabase
             .from('settings')
-            .upsert({ key: 'break_hours', value: payload }, { onConflict: 'key' });
+            .upsert({ user_id: sessionUserId, key: 'break_hours', value: payload });
 
         if (error) throw error;
         showToast("Mola saatleri başarıyla kaydedildi!", "success");
@@ -925,7 +1028,7 @@ async function loadCustomersList() {
         customersArray.sort((a, b) => new Date(b.lastVisit) - new Date(a.lastVisit));
 
         // Fetch notes
-        const { data: notesData, error } = await supabase.from('customer_notes').select('*');
+        const { data: notesData, error } = await supabase.from('customer_notes').select('*').eq('user_id', sessionUserId);
         if (error) throw error;
 
         renderCustomersList(customersArray, notesData || []);
@@ -1013,7 +1116,7 @@ async function handleCustomerNoteSubmit(e) {
     try {
         const { error } = await supabase
             .from('customer_notes')
-            .upsert({ phone: phone, note: note }, { onConflict: 'phone' });
+            .upsert({ user_id: sessionUserId, phone: phone, note: note });
 
         if (error) throw error;
         
@@ -1081,6 +1184,7 @@ async function handleManualAppointmentSubmit(e) {
     showLoader();
     try {
         const { error } = await supabase.from('appointments').insert({
+            user_id: sessionUserId,
             customer_name,
             customer_phone,
             service_name,
@@ -1102,4 +1206,225 @@ async function handleManualAppointmentSubmit(e) {
         hideLoader();
     }
 }
+
+// =============================================
+// SALON PROFILE MANAGEMENT
+// =============================================
+async function loadBarberProfile() {
+    if (!sessionUserId) return;
+
+    showLoader();
+    try {
+        const { data, error } = await supabase
+            .from('barbers')
+            .select('*')
+            .eq('id', sessionUserId)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        // Generate and show sharing URL based on slug or id
+        const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
+        const shareUrl = data && data.slug 
+            ? `${baseUrl}/salon.html?s=${data.slug}`
+            : `${baseUrl}/salon.html?id=${sessionUserId}`;
+        if (salonShareUrlInput) salonShareUrlInput.value = shareUrl;
+
+        if (data) {
+            if (profileSalonName) profileSalonName.value = data.salon_name || '';
+            if (profileSlug) profileSlug.value = data.slug || '';
+            if (profileOwnerName) profileOwnerName.value = data.owner_name || '';
+            if (profilePhone) profilePhone.value = data.phone || '';
+            if (profileAddress) profileAddress.value = data.address || '';
+            if (profileDesc) profileDesc.value = data.description || '';
+            if (profileInstagram) profileInstagram.value = data.instagram || '';
+            if (profileLogoUrl) profileLogoUrl.value = data.logo_url || '';
+            if (profileCoverUrl) profileCoverUrl.value = data.cover_url || '';
+
+            // Populate image previews
+            if (data.logo_url) setImagePreview('logo', data.logo_url);
+            if (data.cover_url) setImagePreview('cover', data.cover_url);
+            
+            // Clean slug status icon
+            if (slugStatusIcon) slugStatusIcon.innerHTML = '';
+        }
+    } catch (err) {
+        console.error("Profil yüklenirken hata:", err);
+        showToast("Profil bilgileri yüklenemedi.", "error");
+    } finally {
+        hideLoader();
+    }
+}
+
+
+// =============================================
+// IMAGE UPLOAD (Supabase Storage)
+// =============================================
+function setImagePreview(type, url) {
+    const img = document.getElementById(`${type}-preview-img`);
+    const placeholder = document.getElementById(`${type}-placeholder`);
+    const removeBtn = document.getElementById(`btn-remove-${type}`);
+    if (img) { img.src = url; img.style.display = 'block'; }
+    if (placeholder) placeholder.style.display = 'none';
+    if (removeBtn) removeBtn.style.display = 'inline-flex';
+}
+
+function clearImagePreview(type) {
+    const img = document.getElementById(`${type}-preview-img`);
+    const placeholder = document.getElementById(`${type}-placeholder`);
+    const removeBtn = document.getElementById(`btn-remove-${type}`);
+    const urlInput = document.getElementById(`profile-${type}-url`);
+    if (img) { img.src = ''; img.style.display = 'none'; }
+    if (placeholder) placeholder.style.display = 'flex';
+    if (removeBtn) removeBtn.style.display = 'none';
+    if (urlInput) urlInput.value = '';
+}
+
+async function handleImageUpload(e, type) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const maxMB = type === 'logo' ? 2 : 5;
+    if (file.size > maxMB * 1024 * 1024) {
+        showToast(`Dosya çok büyük. Maksimum ${maxMB}MB yükleyebilirsiniz.`, 'error');
+        e.target.value = '';
+        return;
+    }
+
+    if (!sessionUserId) { showToast('Oturum bulunamadı.', 'error'); return; }
+
+    const progressBar = document.getElementById(`${type}-progress-bar`);
+    const progressWrapper = document.getElementById(`${type}-upload-progress`);
+
+    if (progressWrapper) progressWrapper.style.display = 'block';
+    if (progressBar) { progressBar.style.width = '0%'; progressBar.style.transition = 'none'; }
+    requestAnimationFrame(() => {
+        if (progressBar) { progressBar.style.transition = 'width 0.5s ease'; progressBar.style.width = '60%'; }
+    });
+
+    try {
+        const ext = file.name.split('.').pop();
+        const fileName = `${sessionUserId}/${type}_${Date.now()}.${ext}`;
+
+        const { error } = await supabase.storage
+            .from('salon-assets')
+            .upload(fileName, file, { upsert: true, contentType: file.type });
+
+        if (error) throw error;
+
+        if (progressBar) progressBar.style.width = '100%';
+        await new Promise(r => setTimeout(r, 400));
+
+        const { data: urlData } = supabase.storage
+            .from('salon-assets')
+            .getPublicUrl(fileName);
+
+        const publicUrl = urlData.publicUrl;
+        const urlInput = document.getElementById(`profile-${type}-url`);
+        if (urlInput) urlInput.value = publicUrl;
+        setImagePreview(type, publicUrl);
+
+        showToast(`${type === 'logo' ? 'Logo' : 'Kapak görseli'} başarıyla yüklendi! ✅`, 'success');
+    } catch (err) {
+        console.error('Görsel yükleme hatası:', err);
+        showToast('Görsel yüklenemedi. Supabase Storage bucket\'ı oluşturulmuş mu?', 'error');
+    } finally {
+        if (progressWrapper) setTimeout(() => { progressWrapper.style.display = 'none'; }, 700);
+        e.target.value = '';
+    }
+}
+
+async function handleProfileSubmit(e) {
+    e.preventDefault();
+    if (!sessionUserId) return;
+
+    const salon_name = profileSalonName.value.trim();
+    const slug = profileSlug ? profileSlug.value.trim().toLowerCase().replace(/[^a-z0-9\-]/g, '') : '';
+    const owner_name = profileOwnerName.value.trim();
+    const phone = profilePhone.value.trim();
+    const address = profileAddress.value.trim();
+    const description = profileDesc.value.trim();
+    const instagram = profileInstagram.value.trim();
+    const logo_url = profileLogoUrl.value.trim();
+    const cover_url = profileCoverUrl.value.trim();
+
+    if (!salon_name) {
+        showToast("Salon adı zorunludur.", "error");
+        return;
+    }
+
+    showLoader();
+    try {
+        // Validate slug uniqueness before saving
+        if (slug) {
+            const { data: existingSlug, error: checkError } = await supabase
+                .from('barbers')
+                .select('id')
+                .eq('slug', slug)
+                .neq('id', sessionUserId)
+                .maybeSingle();
+
+            if (checkError) throw checkError;
+
+            if (existingSlug) {
+                showToast("Bu özel URL adı başka bir salon tarafından kullanılıyor.", "error");
+                hideLoader();
+                return;
+            }
+        }
+
+        const { error } = await supabase
+            .from('barbers')
+            .upsert({
+                id: sessionUserId,
+                salon_name,
+                slug: slug || null, // store null instead of empty string so unique constraint doesn't fail on multiple empty
+                owner_name,
+                phone,
+                address,
+                description,
+                instagram,
+                logo_url,
+                cover_url
+            });
+
+        if (error) throw error;
+        
+        // Update live preview share url input
+        updateLiveShareUrl(slug);
+        
+        showToast("Profil bilgileri başarıyla güncellendi. ✅", "success");
+    } catch (err) {
+        console.error("Profil kaydedilirken hata:", err);
+        showToast("Değişiklikler kaydedilemedi.", "error");
+    } finally {
+        hideLoader();
+    }
+}
+
+function handleCopyShareUrl() {
+    if (salonShareUrlInput) {
+        salonShareUrlInput.select();
+        salonShareUrlInput.setSelectionRange(0, 99999); // Mobil için
+        navigator.clipboard.writeText(salonShareUrlInput.value)
+            .then(() => {
+                showToast("Paylaşım linki kopyalandı! 📋", "success");
+            })
+            .catch(err => {
+                console.error("Kopyalama hatası:", err);
+                showToast("Kopyalanamadı, lütfen manuel seçin.", "error");
+            });
+    }
+}
+
+// Helper to update the live preview sharing link
+function updateLiveShareUrl(slug) {
+    const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
+    if (slug) {
+        salonShareUrlInput.value = `${baseUrl}/salon.html?s=${slug}`;
+    } else {
+        salonShareUrlInput.value = `${baseUrl}/salon.html?id=${sessionUserId}`;
+    }
+}
+
 
