@@ -280,7 +280,7 @@
                 <div class="holiday-config-card" style="margin-bottom: 1.5rem;">
                     <h3><i class="fa-solid fa-share-nodes"></i> Paylaşım Linkiniz</h3>
                     <p>Müşterileriniz bu link üzerinden randevu alabilir. Aşağıdan özel URL adınızı belirleyebilirsiniz.</p>
-                    <div style="display:flex; gap: 0.5rem; margin-top: 1rem; align-items: center;">
+                    <div class="admin-flex-row-responsive" style="margin-top: 1rem;">
                         <input type="text" id="salon-share-url" readonly style="flex:1; padding:0.75rem; border: 1px solid var(--border-color); border-radius: var(--border-radius); background: var(--bg-input); font-family: monospace; font-size: 0.85rem;" value="">
                         <button type="button" class="btn-primary" id="btn-copy-share-url" style="width:auto; padding: 0.75rem 1.5rem;">
                             <i class="fa-regular fa-copy"></i> Kopyala
@@ -303,7 +303,7 @@
                             <div style="display: flex; align-items: center; gap: 0;
                                         border: 1px solid var(--border-color); border-radius: var(--border-radius);
                                         overflow: hidden; background: var(--bg-input);">
-                                <span style="padding: 0.75rem 0.85rem; background: var(--bg-hover); color: var(--text-muted); font-size: 0.82rem; white-space: nowrap; border-right: 1px solid var(--border-color); font-family: monospace;">salon.html?s=</span>
+                                <span class="slug-prefix">salon.html?s=</span>
                                 <input type="text" id="profile-slug"
                                     placeholder="gumus-berber"
                                     pattern="[a-z0-9\-]+"
@@ -314,7 +314,7 @@
                                 Küçük harf, rakam ve tire kullanabilirsiniz. Örn: <code>gumus-berber</code>
                             </small>
                         </div>
-                        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group admin-grid-2">
                             <div>
                                 <label for="profile-owner-name">Sahip / Baş Berber Adı</label>
                                 <input type="text" id="profile-owner-name">
@@ -342,7 +342,7 @@
                         <h3><i class="fa-solid fa-image"></i> Logo & Kapak Görselleri</h3>
                         <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0.5rem 0 1.25rem;">Cihazınızdan direkt yükleyebilir veya internet adresi girebilirsiniz.</p>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+                        <div class="admin-grid-2-lg" style="margin-top: 1rem;">
                             <!-- LOGO UPLOAD -->
                             <div>
                                 <label style="font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.75rem;">

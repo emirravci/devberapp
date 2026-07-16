@@ -755,3 +755,57 @@
     text-overflow: ellipsis;
     vertical-align: middle;
 }
+
+/* =============================================
+   ADMIN PROFILE PANEL RESPONSIVE CLASSES
+   ============================================= */
+.admin-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.admin-grid-2-lg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.admin-flex-row-responsive {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.slug-prefix {
+    padding: 0.75rem 0.85rem;
+    background: var(--bg-hover);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    white-space: nowrap;
+    border-right: 1px solid var(--border-color);
+    font-family: monospace;
+    transition: var(--transition);
+}
+
+@media (max-width: 768px) {
+    .admin-grid-2, .admin-grid-2-lg {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .admin-flex-row-responsive {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .admin-flex-row-responsive button {
+        width: 100% !important;
+    }
+    .slug-prefix {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+

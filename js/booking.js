@@ -317,6 +317,44 @@ async function initBookingEvents() {
     btnCloseAppointmentsModal.addEventListener('click', () => appointmentsModal.classList.remove('active'));
     appointmentsModal.addEventListener('click', (e) => { if (e.target === appointmentsModal) appointmentsModal.classList.remove('active'); });
     btnSuccessBack.addEventListener('click', () => { resetBookingState(); showCustomerView('booking'); });
+
+    // Phone search box event listeners
+    const searchPhoneInput = document.getElementById('appointments-search-phone');
+    const btnSearchAppointments = document.getElementById('btn-search-appointments');
+
+    if (searchPhoneInput) {
+        searchPhoneInput.addEventListener('input', (e) => {
+            let digits = e.target.value.replace(/\D/g, '');
+            if (digits.length > 11) digits = digits.substring(0, 11);
+            let formatted = '';
+            if (digits.length > 0) {
+                if (digits[0] === '0') {
+                    formatted += '0';
+                    if (digits.length > 1) formatted += ' (' + digits.substring(1, 4);
+                    if (digits.length > 4) formatted += ') ' + digits.substring(4, 7);
+                    if (digits.length > 7) formatted += ' ' + digits.substring(7, 9);
+                    if (digits.length > 9) formatted += ' ' + digits.substring(9, 11);
+                } else {
+                    formatted += '(' + digits.substring(0, 3);
+                    if (digits.length > 3) formatted += ') ' + digits.substring(3, 6);
+                    if (digits.length > 6) formatted += ' ' + digits.substring(6, 8);
+                    if (digits.length > 8) formatted += ' ' + digits.substring(8, 10);
+                }
+            }
+            e.target.value = formatted;
+        });
+
+        searchPhoneInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (btnSearchAppointments) btnSearchAppointments.click();
+            }
+        });
+    }
+
+    if (btnSearchAppointments) {
+        btnSearchAppointments.addEventListener('click', searchAppointmentsByPhone);
+    }
 }
 
 function openConfirmModal() {
@@ -650,32 +688,88 @@ function setupCalendarLinks(service, dateStr, timeStr, durationMinutes) {
 // =============================================
 async function openAppointmentsModal() {
     appointmentsModal.classList.add('active');
-    myAppointmentsList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:1rem;"><i class="fa-solid fa-circle-notch fa-spin"></i> Yukleniyor...</div>';
-    const savedIds = getSavedAppointmentIds();
-    if (savedIds.length === 0) {
-        myAppointmentsList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:2rem 1rem;"><i class="fa-solid fa-calendar-xmark" style="font-size:2rem;color:var(--text-muted);margin-bottom:0.5rem;display:block;"></i>Henuz kayitli bir randevunuz bulunmamaktadir.</div>';
+    
+    const searchPhoneInput = document.getElementById('appointments-search-phone');
+    if (searchPhoneInput) {
+        const savedPhone = localStorage.getItem('devber_search_phone');
+        if (savedPhone) {
+            searchPhoneInput.value = savedPhone;
+            await searchAppointmentsByPhone();
+        } else {
+            searchPhoneInput.value = '';
+            myAppointmentsList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:2rem 1rem;"><i class="fa-solid fa-phone-volume" style="font-size:2rem;color:var(--text-muted);margin-bottom:0.5rem;display:block;"></i>Randevularınızı listelemek için telefon numaranızı girip sorgulayın.</div>';
+        }
+    }
+}
+
+async function searchAppointmentsByPhone() {
+    const searchPhoneInput = document.getElementById('appointments-search-phone');
+    if (!searchPhoneInput) return;
+
+    const phoneVal = searchPhoneInput.value.trim();
+    if (!phoneVal) {
+        showToast("Lütfen telefon numaranızı girin.", "error");
         return;
     }
+
+    // Save phone to localStorage so they don't need to type it next time
+    localStorage.setItem('devber_search_phone', phoneVal);
+
+    myAppointmentsList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:1rem;"><i class="fa-solid fa-circle-notch fa-spin"></i> Sorgulanıyor...</div>';
+
     try {
-        const { data, error } = await supabase.from('appointments').select('*').in('id', savedIds).order('appointment_date', { ascending: false }).order('appointment_time', { ascending: false });
+        let query = supabase
+            .from('appointments')
+            .select('*')
+            .eq('customer_phone', phoneVal);
+            
+        // Filter by barberId so they only see appointments of the current salon for privacy!
+        if (barberId) {
+            query = query.eq('user_id', barberId);
+        }
+        
+        const { data, error } = await query
+            .order('appointment_date', { ascending: false })
+            .order('appointment_time', { ascending: false });
+
         if (error) throw error;
+
         if (!data || data.length === 0) {
-            myAppointmentsList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:2rem 1rem;">Kayitli randevulariniz bulunamadi.</div>';
+            myAppointmentsList.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:2rem 1rem;"><i class="fa-solid fa-calendar-xmark" style="font-size:2rem;color:var(--text-muted);margin-bottom:0.5rem;display:block;"></i>Bu telefon numarasına ait aktif randevu bulunamadı.</div>';
             return;
         }
+
         myAppointmentsList.innerHTML = '';
         data.forEach(app => {
             const card = document.createElement('div');
             card.className = 'my-appointment-card';
+            
             let statusText = 'Bekliyor', statusClass = 'pending';
-            if (app.status === 'approved') { statusText = 'Onaylandi'; statusClass = 'approved'; }
-            else if (app.status === 'rejected') { statusText = 'Reddedildi'; statusClass = 'rejected'; }
-            card.innerHTML = '<div class="my-appointment-info"><span class="my-appointment-service">' + app.service_name + '</span><span class="my-appointment-datetime"><i class="fa-solid fa-calendar-day"></i> ' + formatTurkishDate(app.appointment_date) + ' &nbsp;<i class="fa-solid fa-clock"></i> ' + formatTime(app.appointment_time) + '</span></div><div class="my-appointment-status"><span class="status-badge ' + statusClass + '">' + statusText + '</span></div>';
+            if (app.status === 'approved') { 
+                statusText = 'Onaylandı'; 
+                statusClass = 'approved'; 
+            } else if (app.status === 'rejected') { 
+                statusText = 'Reddedildi'; 
+                statusClass = 'rejected'; 
+            }
+            
+            card.innerHTML = `
+                <div class="my-appointment-info">
+                    <span class="my-appointment-service">${app.service_name}</span>
+                    <span class="my-appointment-datetime">
+                        <i class="fa-solid fa-calendar-day"></i> ${formatTurkishDate(app.appointment_date)} &nbsp;
+                        <i class="fa-solid fa-clock"></i> ${formatTime(app.appointment_time)}
+                    </span>
+                </div>
+                <div class="my-appointment-status">
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+            `;
             myAppointmentsList.appendChild(card);
         });
     } catch (err) {
-        console.error('Randevular yuklenirken hata olustu:', err);
-        myAppointmentsList.innerHTML = '<div style="color:var(--color-error);text-align:center;padding:1rem;">Randevular yuklenirken bir hata olustu.</div>';
+        console.error('Randevular sorgulanırken hata oluştu:', err);
+        myAppointmentsList.innerHTML = '<div style="color:var(--color-error);text-align:center;padding:1rem;">Sorgulama yapılırken bir hata oluştu.</div>';
     }
 }
 
