@@ -1046,10 +1046,12 @@ function renderCustomersList(customers, notes) {
 
     if (customers.length === 0) {
         adminCustomersList.innerHTML = `
-            <div class="empty-state">
-                <i class="fa-solid fa-users-slash"></i>
-                <p>Kayıtlı müşteri bulunamadı.</p>
-            </div>
+            <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 3rem 0;">
+                    <i class="fa-solid fa-users-slash" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem; display: block; margin-left: auto; margin-right: auto;"></i>
+                    Kayıtlı müşteri bulunamadı.
+                </td>
+            </tr>
         `;
         return;
     }
@@ -1058,39 +1060,47 @@ function renderCustomersList(customers, notes) {
         const noteRow = notes.find(n => n.phone === customer.phone);
         const noteText = noteRow ? noteRow.note : 'Not eklenmemiş.';
         
-        const card = document.createElement('div');
-        card.className = 'appointment-admin-card';
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--border-color)';
 
-        card.innerHTML = `
-            <div class="appointment-info">
-                <div class="app-customer-header">
-                    <span class="app-customer-name"><i class="fa-solid fa-user"></i> ${customer.name}</span>
+        tr.innerHTML = `
+            <td style="padding: 1rem 1.5rem; vertical-align: middle;">
+                <div style="font-weight: 600; color: var(--text-primary);">${customer.name}</div>
+                <div class="customer-note-summary" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    <i class="fa-solid fa-sticky-note" style="color: var(--accent-gold); font-size: 0.75rem; margin-right: 0.25rem;"></i>
+                    <span>${noteText}</span>
                 </div>
-                <div class="app-details-row">
-                    <div class="app-detail-item"><i class="fa-solid fa-phone"></i> <span><a href="tel:${customer.phone}" style="color: inherit; text-decoration: none;">${customer.phone}</a></span></div>
-                    <div class="app-detail-item"><i class="fa-solid fa-calendar-check"></i> <span>Ziyaret: <strong>${customer.totalAppointments}</strong></span></div>
-                    <div class="app-detail-item"><i class="fa-solid fa-wallet"></i> <span>Harcama: <strong>${customer.totalRevenue} ₺</strong></span></div>
+            </td>
+            <td style="padding: 1rem 1.5rem; vertical-align: middle;">
+                <a href="tel:${customer.phone}" style="color: inherit; text-decoration: none;">${customer.phone}</a>
+            </td>
+            <td style="padding: 1rem 1.5rem; vertical-align: middle;">
+                ${customer.lastVisit ? formatDateTurkish(customer.lastVisit) : '-'}
+            </td>
+            <td style="padding: 1rem 1.5rem; vertical-align: middle; font-weight: 600;">
+                ${customer.totalAppointments}
+            </td>
+            <td style="padding: 1rem 1.5rem; vertical-align: middle; font-weight: 600; color: var(--color-success) !important;">
+                ${customer.totalRevenue} ₺
+            </td>
+            <td style="padding: 1rem 1.5rem; vertical-align: middle; text-align: center;">
+                <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
+                    <button class="btn-secondary btn-sm btn-edit-note" data-phone="${customer.phone}" data-name="${customer.name}" data-note="${noteRow ? noteRow.note : ''}" style="color: var(--accent-gold); border-color: var(--accent-gold); padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.3rem;">
+                        <i class="fa-solid fa-pen"></i> Not
+                    </button>
+                    <a href="${buildWhatsAppUrl({customer_phone: customer.phone, customer_name: customer.name}, 'contact')}" target="_blank" class="btn-whatsapp btn-sm" title="WhatsApp'tan Mesaj Gönder" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </a>
                 </div>
-                <div class="app-notes" style="margin-top: 0.5rem; background: var(--bg-card); border-left-color: var(--accent-gold);">
-                    <strong>Müşteri Notu:</strong> <span class="note-content">${noteText}</span>
-                </div>
-            </div>
-            <div class="app-actions">
-                <button class="btn-secondary btn-edit-note" data-phone="${customer.phone}" data-name="${customer.name}" data-note="${noteRow ? noteRow.note : ''}" style="color: var(--accent-gold); border-color: var(--accent-gold);">
-                    <i class="fa-solid fa-pen"></i> Not Düzenle
-                </button>
-                <a href="${buildWhatsAppUrl({customer_phone: customer.phone, customer_name: customer.name}, 'contact')}" target="_blank" class="btn-whatsapp" title="WhatsApp'tan Mesaj Gönder">
-                    <i class="fa-brands fa-whatsapp"></i>
-                </a>
-            </div>
+            </td>
         `;
 
-        card.querySelector('.btn-edit-note').addEventListener('click', (e) => {
+        tr.querySelector('.btn-edit-note').addEventListener('click', (e) => {
             const btn = e.currentTarget;
             openNoteModal(btn.dataset.phone, btn.dataset.note);
         });
 
-        adminCustomersList.appendChild(card);
+        adminCustomersList.appendChild(tr);
     });
 }
 

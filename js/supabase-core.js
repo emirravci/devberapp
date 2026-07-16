@@ -45,7 +45,7 @@ export function showToast(message, type = 'info') {
 // LocalStorage helpers for customer appointments
 export function getSavedAppointmentIds() {
     try {
-        const ids = localStorage.getItem('saloon_gold_appointments');
+        const ids = localStorage.getItem('devber_appointments');
         return ids ? JSON.parse(ids) : [];
     } catch (e) {
         console.error('Error reading localStorage', e);
@@ -58,7 +58,7 @@ export function saveAppointmentId(id) {
         const ids = getSavedAppointmentIds();
         if (!ids.includes(id)) {
             ids.push(id);
-            localStorage.setItem('saloon_gold_appointments', JSON.stringify(ids));
+            localStorage.setItem('devber_appointments', JSON.stringify(ids));
         }
     } catch (e) {
         console.error('Error writing to localStorage', e);

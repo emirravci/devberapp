@@ -634,7 +634,7 @@ function setupCalendarLinks(service, dateStr, timeStr, durationMinutes) {
     const location = encodeURIComponent(salonName);
     googleBtn.href = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + title + '&dates=' + startStr + '/' + endStr + '&details=' + details + '&location=' + location;
     appleBtn.onclick = () => {
-        const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//' + salonName + '//EN', 'BEGIN:VEVENT', 'UID:' + Date.now() + '@devberberapp', 'DTSTAMP:' + formatISO(new Date()) + 'Z', 'DTSTART:' + startStr, 'DTEND:' + endStr, 'SUMMARY:' + salonName + ' - ' + service, 'DESCRIPTION:' + service + ' randevunuz.', 'LOCATION:' + salonName, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+        const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//' + salonName + '//EN', 'BEGIN:VEVENT', 'UID:' + Date.now() + '@devberapp', 'DTSTAMP:' + formatISO(new Date()) + 'Z', 'DTSTART:' + startStr, 'DTEND:' + endStr, 'SUMMARY:' + salonName + ' - ' + service, 'DESCRIPTION:' + service + ' randevunuz.', 'LOCATION:' + salonName, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
         const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
