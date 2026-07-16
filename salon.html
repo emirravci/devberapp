@@ -45,30 +45,39 @@
                 <div class="salon-cover-overlay"></div>
             </div>
             
-            <div class="salon-profile-details">
-                <div class="salon-avatar-wrapper">
-                    <img id="salon-logo-img" src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=150&auto=format&fit=crop&q=80" alt="Logo">
-                </div>
-                
-                <div class="salon-info-text">
-                    <h1 id="display-salon-name" class="salon-title">Salon Yükleniyor...</h1>
-                    <p id="display-salon-description" class="salon-desc">Lütfen bekleyin, profil bilgileri yükleniyor.</p>
-                    
-                    <div class="salon-contact-meta">
-                        <a id="display-salon-phone" href="#"><i class="fa-solid fa-phone"></i> Yükleniyor...</a>
-                        <a id="display-salon-address" href="#" target="_blank"><i class="fa-solid fa-location-dot"></i> Yükleniyor...</a>
-                        <a id="display-salon-whatsapp" href="#" target="_blank" style="display: none;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-                        <a id="display-salon-instagram" href="#" target="_blank" style="display: none;"><i class="fa-brands fa-instagram"></i> Instagram</a>
+            <div class="salon-profile-card-container">
+                <div class="salon-profile-card">
+                    <div class="salon-profile-details">
+                        <div class="salon-avatar-wrapper">
+                            <img id="salon-logo-img" src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=150&auto=format&fit=crop&q=80" alt="Logo">
+                        </div>
+                        
+                        <div class="salon-info-text">
+                            <div class="salon-title-row">
+                                <h1 id="display-salon-name" class="salon-title">Salon Yükleniyor...</h1>
+                                <span id="display-salon-owner" class="salon-owner-badge" style="display: none;">
+                                    <i class="fa-solid fa-crown"></i> <span>Sahip</span>
+                                </span>
+                            </div>
+                            <p id="display-salon-description" class="salon-desc">Lütfen bekleyin, profil bilgileri yükleniyor.</p>
+                            
+                            <div class="salon-contact-meta">
+                                <a id="display-salon-phone" href="#" class="contact-pill"><i class="fa-solid fa-phone"></i> Yükleniyor...</a>
+                                <a id="display-salon-address" href="#" target="_blank" class="contact-pill"><i class="fa-solid fa-location-dot"></i> Yükleniyor...</a>
+                                <a id="display-salon-whatsapp" href="#" target="_blank" class="contact-pill whatsapp-pill" style="display: none;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                                <a id="display-salon-instagram" href="#" target="_blank" class="contact-pill instagram-pill" style="display: none;"><i class="fa-brands fa-instagram"></i> Instagram</a>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="salon-profile-actions">
-                    <span id="salon-status-badge" class="salon-status-badge status-loading">
-                        <span class="status-pulse"></span> Yükleniyor...
-                    </span>
-                    <button type="button" class="btn-ghost" id="btn-my-appointments">
-                        <i class="fa-solid fa-clock-rotate-left"></i> Randevularım
-                    </button>
+                    <div class="salon-profile-actions">
+                        <span id="salon-status-badge" class="salon-status-badge status-loading">
+                            <span class="status-pulse"></span> Yükleniyor...
+                        </span>
+                        <button type="button" class="btn-ghost" id="btn-my-appointments">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Randevularım
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

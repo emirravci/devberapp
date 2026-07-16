@@ -79,6 +79,7 @@ async function loadSalonProfile() {
 
         const salonName = data.salon_name;
         const salonDesc = data.description;
+        const salonOwner = data.owner_name;
         const salonPhone = data.phone;
         const salonAddress = data.address;
         const salonInstagram = data.instagram;
@@ -90,9 +91,18 @@ async function loadSalonProfile() {
         const nameEl = document.getElementById('display-salon-name');
         const appbarNameEl = document.getElementById('appbar-salon-name');
         const descEl = document.getElementById('display-salon-description');
+        const ownerEl = document.getElementById('display-salon-owner');
 
         if (appbarNameEl) appbarNameEl.textContent = salonName || 'Salon';
         if (nameEl) nameEl.textContent = salonName || 'Salon';
+        if (ownerEl) {
+            if (salonOwner) {
+                ownerEl.querySelector('span').textContent = salonOwner;
+                ownerEl.style.display = 'inline-flex';
+            } else {
+                ownerEl.style.display = 'none';
+            }
+        }
         const phoneEl = document.getElementById('display-salon-phone');
         const addressEl = document.getElementById('display-salon-address');
         const whatsappEl = document.getElementById('display-salon-whatsapp');
